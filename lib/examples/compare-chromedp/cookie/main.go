@@ -5,8 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"

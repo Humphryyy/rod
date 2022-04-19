@@ -10,9 +10,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/utils"
 	"github.com/ysmood/gson"

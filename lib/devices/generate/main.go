@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"strings"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/utils"
 	"github.com/ysmood/gson"

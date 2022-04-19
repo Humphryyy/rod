@@ -3,7 +3,8 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
-	"net/http"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 	"github.com/ysmood/gson"

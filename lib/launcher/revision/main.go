@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/utils"
 )

@@ -7,9 +7,10 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"net/url"
 	"sync"
+
+	http "github.com/Carcraftz/fhttp"
 )
 
 var _ WebSocketable = &WebSocket{}

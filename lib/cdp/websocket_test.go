@@ -3,11 +3,12 @@ package cdp_test
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/cdp"
 	"github.com/go-rod/rod/lib/launcher"

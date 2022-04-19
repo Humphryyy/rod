@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"

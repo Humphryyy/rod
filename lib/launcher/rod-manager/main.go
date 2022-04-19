@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"os"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/utils"

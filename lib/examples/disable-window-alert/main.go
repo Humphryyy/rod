@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/utils"

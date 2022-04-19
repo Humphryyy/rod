@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"html"
 	"net"
-	"net/http"
 	"strings"
 	"time"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/assets"
 	"github.com/go-rod/rod/lib/js"

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 )

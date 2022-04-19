@@ -5,11 +5,12 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"sync"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/utils"
 	"github.com/ysmood/gson"

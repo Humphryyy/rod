@@ -4,7 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
-	"net/http"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/utils"
 )

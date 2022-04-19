@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -16,6 +15,8 @@ import (
 	"runtime/debug"
 	"sync"
 	"time"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/cdp"
 	"github.com/go-rod/rod/lib/proto"

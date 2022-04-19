@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +13,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/cdp"

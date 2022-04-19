@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/defaults"
 	"github.com/go-rod/rod/lib/utils"

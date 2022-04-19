@@ -11,11 +11,12 @@ package rod
 import (
 	"errors"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	http "github.com/Carcraftz/fhttp"
 
 	"github.com/go-rod/rod/lib/devices"
 	"github.com/go-rod/rod/lib/proto"
