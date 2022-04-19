@@ -11,12 +11,12 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/cdp"
-	"github.com/go-rod/rod/lib/input"
-	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/proto"
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod"
+	"github.com/Humphryyy/rod/lib/cdp"
+	"github.com/Humphryyy/rod/lib/input"
+	"github.com/Humphryyy/rod/lib/launcher"
+	"github.com/Humphryyy/rod/lib/proto"
+	"github.com/Humphryyy/rod/lib/utils"
 	"github.com/ysmood/gson"
 )
 
@@ -62,7 +62,7 @@ func Example() {
 
 // Shows how to disable headless mode and debug.
 // Rod provides a lot of debug options, you can set them with setter methods or use environment variables.
-// Doc for environment variables: https://pkg.go.dev/github.com/go-rod/rod/lib/defaults
+// Doc for environment variables: https://pkg.go.dev/github.com/Humphryyy/rod/lib/defaults
 func Example_disable_headless_to_debug() {
 	// Headless runs the browser on foreground, you can also use env "rod=show"
 	// Devtools opens the tab in each new tab opened automatically
@@ -370,7 +370,7 @@ func Example_customize_browser_launch() {
 }
 
 // When rod doesn't have a feature that you need. You can easily call the cdp to achieve it.
-// List of cdp API: https://github.com/go-rod/rod/tree/master/lib/proto
+// List of cdp API: https://github.com/Humphryyy/rod/tree/master/lib/proto
 func Example_direct_cdp() {
 	page := rod.New().MustConnect().MustPage()
 
@@ -576,7 +576,7 @@ func Example_load_extension() {
 		Set("load-extension", extPath).
 		// Headless mode doesn't support extension yet.
 		// Reason: https://bugs.chromium.org/p/chromium/issues/detail?id=706008#c5
-		// You can use XVFB to get rid of it: https://github.com/go-rod/rod/blob/master/lib/examples/launch-managed/main.go
+		// You can use XVFB to get rid of it: https://github.com/Humphryyy/rod/blob/master/lib/examples/launch-managed/main.go
 		Headless(false).
 		MustLaunch()
 

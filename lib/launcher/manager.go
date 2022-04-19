@@ -11,9 +11,9 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod/lib/cdp"
-	"github.com/go-rod/rod/lib/launcher/flags"
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/cdp"
+	"github.com/Humphryyy/rod/lib/launcher/flags"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 const (

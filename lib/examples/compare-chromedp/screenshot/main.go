@@ -3,8 +3,8 @@ package main
 import (
 	"io/ioutil"
 
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/proto"
+	"github.com/Humphryyy/rod"
+	"github.com/Humphryyy/rod/lib/proto"
 	"github.com/ysmood/gson"
 )
 

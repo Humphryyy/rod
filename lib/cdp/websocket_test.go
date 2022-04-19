@@ -10,8 +10,8 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod/lib/cdp"
-	"github.com/go-rod/rod/lib/launcher"
+	"github.com/Humphryyy/rod/lib/cdp"
+	"github.com/Humphryyy/rod/lib/launcher"
 	"github.com/ysmood/got"
 	"github.com/ysmood/gson"
 )

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 // Trace is the default of rod.Browser.Trace .

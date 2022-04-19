@@ -10,8 +10,8 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/launcher"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 var addr = flag.String("address", ":7317", "the address to listen to")

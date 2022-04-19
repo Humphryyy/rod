@@ -18,9 +18,9 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod/lib/devices"
-	"github.com/go-rod/rod/lib/proto"
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/devices"
+	"github.com/Humphryyy/rod/lib/proto"
+	"github.com/Humphryyy/rod/lib/utils"
 	"github.com/ysmood/gson"
 )
 

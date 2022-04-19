@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-rod/rod/lib/input"
-	"github.com/go-rod/rod/lib/proto"
+	"github.com/Humphryyy/rod/lib/input"
+	"github.com/Humphryyy/rod/lib/proto"
 	"github.com/ysmood/gson"
 )
 

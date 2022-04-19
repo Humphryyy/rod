@@ -7,8 +7,8 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/input"
+	"github.com/Humphryyy/rod"
+	"github.com/Humphryyy/rod/lib/input"
 )
 
 var flagPort = flag.Int("port", 8544, "port")

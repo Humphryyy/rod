@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/go-rod/rod/lib/launcher"
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/launcher"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 func main() {

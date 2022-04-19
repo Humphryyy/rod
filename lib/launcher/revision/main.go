@@ -11,7 +11,7 @@ import (
 
 	http "github.com/Carcraftz/fhttp"
 
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 const mirror = "https://registry.npmmirror.com/-/binary/chromium-browser-snapshots/"
