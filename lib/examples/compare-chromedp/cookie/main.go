@@ -2,27 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
+	"net"
 	"time"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod"
 	"github.com/Humphryyy/rod/lib/proto"
 )
 
-var flagPort = flag.Int("port", 8544, "port")
-
 // This example demonstrates how we can modify the cookies on a web page.
 func main() {
-	flag.Parse()
-
-	// start cookie server
-	go cookieServer(fmt.Sprintf(":%d", *flagPort))
-
-	host := fmt.Sprintf("http://localhost:%d", *flagPort)
 	expr := proto.TimeSinceEpoch(time.Now().Add(180 * 24 * time.Hour).Unix())
 
 	page := rod.New().MustConnect().MustPage()
@@ -30,42 +22,46 @@ func main() {
 	page.MustSetCookies(&proto.NetworkCookieParam{
 		Name:     "cookie1",
 		Value:    "value1",
-		Domain:   "localhost",
+		Domain:   "127.0.0.1",
 		HTTPOnly: true,
 		Expires:  expr,
 	}, &proto.NetworkCookieParam{
 		Name:     "cookie2",
 		Value:    "value2",
-		Domain:   "localhost",
+		Domain:   "127.0.0.1",
 		HTTPOnly: true,
 		Expires:  expr,
 	})
 
-	page.MustNavigate(host)
+	page.MustNavigate(cookieServer())
 
 	// read network values
-	log.Printf("%+v\n", page.MustCookies())
+	for i, cookie := range page.MustCookies() {
+		log.Printf("chrome cookie %d: %+v", i, cookie)
+	}
 
 	// chrome received cookies
 	log.Printf("chrome received cookies: %s", page.MustElement(`#result`).MustText())
 }
 
 // cookieServer creates a simple HTTP server that logs any passed cookies.
-func cookieServer(addr string) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
-		cookies := req.Cookies()
-		for i, cookie := range cookies {
-			log.Printf("from %s, server received cookie %d: %v", req.RemoteAddr, i, cookie)
-		}
-		buf, err := json.MarshalIndent(req.Cookies(), "", "  ")
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		_, _ = fmt.Fprintf(res, indexHTML, string(buf))
-	})
-	_ = http.ListenAndServe(addr, mux)
+func cookieServer() string {
+	l, _ := net.Listen("tcp4", "127.0.0.1:0")
+	go func() {
+		_ = http.Serve(l, http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			cookies := req.Cookies()
+			for i, cookie := range cookies {
+				log.Printf("from %s, server received cookie %d: %v", req.RemoteAddr, i, cookie)
+			}
+			buf, err := json.MarshalIndent(req.Cookies(), "", "  ")
+			if err != nil {
+				http.Error(res, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			_, _ = fmt.Fprintf(res, indexHTML, string(buf))
+		}))
+	}()
+	return "http://" + l.Addr().String()
 }
 
 const (

@@ -1,5 +1,4 @@
 //go:generate go run ./lib/utils/setup
-//go:generate go run ./lib/launcher/revision
 //go:generate go run ./lib/proto/generate
 //go:generate go run ./lib/js/generate
 //go:generate go run ./lib/assets/generate
@@ -289,9 +288,7 @@ func (b *Browser) PageFromTarget(targetID proto.TargetTargetID) (*Page, error) {
 	}
 
 	page.root = page
-	page.Mouse = &Mouse{page: page, id: utils.RandString(8)}
-	page.Keyboard = &Keyboard{page: page}
-	page.Touch = &Touch{page: page}
+	page.newKeyboard().newMouse().newTouch()
 
 	if !b.defaultDevice.IsClear() {
 		err = page.Emulate(b.defaultDevice)
@@ -432,10 +429,12 @@ func (b *Browser) Event() <-chan *Message {
 }
 
 func (b *Browser) initEvents() {
-	b.event = goob.New(b.ctx)
+	ctx, cancel := context.WithCancel(b.ctx)
+	b.event = goob.New(ctx)
 	event := b.client.Event()
 
 	go func() {
+		defer cancel()
 		for e := range event {
 			b.event.Publish(&Message{
 				SessionID: proto.TargetSessionID(e.SessionID),
@@ -499,7 +498,7 @@ func (b *Browser) WaitDownload(dir string) func() (info *proto.PageDownloadWillB
 	waitProgress := b.EachEvent(func(e *proto.PageDownloadWillBegin) {
 		start = e
 	}, func(e *proto.PageDownloadProgress) bool {
-		return start.GUID == e.GUID && e.State == proto.PageDownloadProgressStateCompleted
+		return start != nil && start.GUID == e.GUID && e.State == proto.PageDownloadProgressStateCompleted
 	})
 
 	return func() *proto.PageDownloadWillBegin {
@@ -518,4 +517,9 @@ func (b *Browser) WaitDownload(dir string) func() (info *proto.PageDownloadWillB
 
 		return start
 	}
+}
+
+// Version info of the browser
+func (b *Browser) Version() (*proto.BrowserGetVersionResult, error) {
+	return proto.BrowserGetVersion{}.Call(b)
 }

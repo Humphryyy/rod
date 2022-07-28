@@ -8,6 +8,9 @@ Storage
 
 */
 
+// StorageSerializedStorageKey ...
+type StorageSerializedStorageKey string
+
 // StorageStorageType Enum of possible storage types.
 type StorageStorageType string
 
@@ -138,6 +141,29 @@ type StorageInterestGroupDetails struct {
 
 	// AdComponents ...
 	AdComponents []*StorageInterestGroupAd `json:"adComponents"`
+}
+
+// StorageGetStorageKeyForFrame Returns a storage key given a frame id.
+type StorageGetStorageKeyForFrame struct {
+
+	// FrameID ...
+	FrameID PageFrameID `json:"frameId"`
+}
+
+// ProtoReq name
+func (m StorageGetStorageKeyForFrame) ProtoReq() string { return "Storage.getStorageKeyForFrame" }
+
+// Call the request
+func (m StorageGetStorageKeyForFrame) Call(c Client) (*StorageGetStorageKeyForFrameResult, error) {
+	var res StorageGetStorageKeyForFrameResult
+	return &res, call(m.ProtoReq(), m, &res, c)
+}
+
+// StorageGetStorageKeyForFrameResult ...
+type StorageGetStorageKeyForFrameResult struct {
+
+	// StorageKey ...
+	StorageKey StorageSerializedStorageKey `json:"storageKey"`
 }
 
 // StorageClearDataForOrigin Clears storage for origin.

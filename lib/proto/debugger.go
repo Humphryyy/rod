@@ -85,6 +85,12 @@ type DebuggerCallFrame struct {
 
 	// ReturnValue (optional) The value being returned, if the function is at return point.
 	ReturnValue *RuntimeRemoteObject `json:"returnValue,omitempty"`
+
+	// CanBeRestarted (experimental) (optional) Valid only while the VM is paused and indicates whether this frame
+	// can be restarted or not. Note that a `true` value here does not
+	// guarantee that Debugger#restartFrame with this CallFrameId will be
+	// successful, but it is very likely.
+	CanBeRestarted bool `json:"canBeRestarted,omitempty"`
 }
 
 // DebuggerScopeType enum
@@ -485,11 +491,35 @@ func (m DebuggerRemoveBreakpoint) Call(c Client) error {
 	return call(m.ProtoReq(), m, nil, c)
 }
 
-// DebuggerRestartFrame (deprecated) Restarts particular call frame from the beginning.
+// DebuggerRestartFrameMode enum
+type DebuggerRestartFrameMode string
+
+const (
+	// DebuggerRestartFrameModeStepInto enum const
+	DebuggerRestartFrameModeStepInto DebuggerRestartFrameMode = "StepInto"
+)
+
+// DebuggerRestartFrame Restarts particular call frame from the beginning. The old, deprecated
+// behavior of `restartFrame` is to stay paused and allow further CDP commands
+// after a restart was scheduled. This can cause problems with restarting, so
+// we now continue execution immediately after it has been scheduled until we
+// reach the beginning of the restarted frame.
+//
+// To stay back-wards compatible, `restartFrame` now expects a `mode`
+// parameter to be present. If the `mode` parameter is missing, `restartFrame`
+// errors out.
+//
+// The various return values are deprecated and `callFrames` is always empty.
+// Use the call frames from the `Debugger#paused` events instead, that fires
+// once V8 pauses at the beginning of the restarted function.
 type DebuggerRestartFrame struct {
 
 	// CallFrameID Call frame identifier to evaluate on.
 	CallFrameID DebuggerCallFrameID `json:"callFrameId"`
+
+	// Mode (experimental) (optional) The `mode` parameter must be present and set to 'StepInto', otherwise
+	// `restartFrame` will error out.
+	Mode DebuggerRestartFrameMode `json:"mode,omitempty"`
 }
 
 // ProtoReq name
@@ -501,16 +531,16 @@ func (m DebuggerRestartFrame) Call(c Client) (*DebuggerRestartFrameResult, error
 	return &res, call(m.ProtoReq(), m, &res, c)
 }
 
-// DebuggerRestartFrameResult (deprecated) ...
+// DebuggerRestartFrameResult ...
 type DebuggerRestartFrameResult struct {
 
-	// CallFrames New stack trace.
+	// CallFrames (deprecated) New stack trace.
 	CallFrames []*DebuggerCallFrame `json:"callFrames"`
 
-	// AsyncStackTrace (optional) Async stack trace, if any.
+	// AsyncStackTrace (deprecated) (optional) Async stack trace, if any.
 	AsyncStackTrace *RuntimeStackTrace `json:"asyncStackTrace,omitempty"`
 
-	// AsyncStackTraceID (experimental) (optional) Async stack trace, if any.
+	// AsyncStackTraceID (deprecated) (optional) Async stack trace, if any.
 	AsyncStackTraceID *RuntimeStackTraceID `json:"asyncStackTraceId,omitempty"`
 }
 
@@ -823,6 +853,12 @@ func (m DebuggerSetReturnValue) Call(c Client) error {
 }
 
 // DebuggerSetScriptSource Edits JavaScript source live.
+//
+// In general, functions that are currently on the stack can not be edited with
+// a single exception: If the edited function is the top-most stack frame and
+// that is the only activation of that function on the stack. In this case
+// the live edit will be successful and a `Debugger.restartFrame` for the
+// top-most function is automatically triggered.
 type DebuggerSetScriptSource struct {
 
 	// ScriptID Id of the script to edit.
@@ -834,6 +870,10 @@ type DebuggerSetScriptSource struct {
 	// DryRun (optional) If true the change will not actually be applied. Dry run may be used to get result
 	// description without actually modifying the code.
 	DryRun bool `json:"dryRun,omitempty"`
+
+	// AllowTopFrameEditing (experimental) (optional) If true, then `scriptSource` is allowed to change the function on top of the stack
+	// as long as the top-most stack frame is the only activation of that function.
+	AllowTopFrameEditing bool `json:"allowTopFrameEditing,omitempty"`
 }
 
 // ProtoReq name
@@ -845,22 +885,44 @@ func (m DebuggerSetScriptSource) Call(c Client) (*DebuggerSetScriptSourceResult,
 	return &res, call(m.ProtoReq(), m, &res, c)
 }
 
+// DebuggerSetScriptSourceResultStatus enum
+type DebuggerSetScriptSourceResultStatus string
+
+const (
+	// DebuggerSetScriptSourceResultStatusOk enum const
+	DebuggerSetScriptSourceResultStatusOk DebuggerSetScriptSourceResultStatus = "Ok"
+
+	// DebuggerSetScriptSourceResultStatusCompileError enum const
+	DebuggerSetScriptSourceResultStatusCompileError DebuggerSetScriptSourceResultStatus = "CompileError"
+
+	// DebuggerSetScriptSourceResultStatusBlockedByActiveGenerator enum const
+	DebuggerSetScriptSourceResultStatusBlockedByActiveGenerator DebuggerSetScriptSourceResultStatus = "BlockedByActiveGenerator"
+
+	// DebuggerSetScriptSourceResultStatusBlockedByActiveFunction enum const
+	DebuggerSetScriptSourceResultStatusBlockedByActiveFunction DebuggerSetScriptSourceResultStatus = "BlockedByActiveFunction"
+)
+
 // DebuggerSetScriptSourceResult ...
 type DebuggerSetScriptSourceResult struct {
 
-	// CallFrames (optional) New stack trace in case editing has happened while VM was stopped.
+	// CallFrames (deprecated) (optional) New stack trace in case editing has happened while VM was stopped.
 	CallFrames []*DebuggerCallFrame `json:"callFrames,omitempty"`
 
-	// StackChanged (optional) Whether current call stack  was modified after applying the changes.
+	// StackChanged (deprecated) (optional) Whether current call stack  was modified after applying the changes.
 	StackChanged bool `json:"stackChanged,omitempty"`
 
-	// AsyncStackTrace (optional) Async stack trace, if any.
+	// AsyncStackTrace (deprecated) (optional) Async stack trace, if any.
 	AsyncStackTrace *RuntimeStackTrace `json:"asyncStackTrace,omitempty"`
 
-	// AsyncStackTraceID (experimental) (optional) Async stack trace, if any.
+	// AsyncStackTraceID (deprecated) (optional) Async stack trace, if any.
 	AsyncStackTraceID *RuntimeStackTraceID `json:"asyncStackTraceId,omitempty"`
 
-	// ExceptionDetails (optional) Exception details if any.
+	// Status (experimental) Whether the operation was successful or not. Only `Ok` denotes a
+	// successful live edit while the other enum variants denote why
+	// the live edit failed.
+	Status DebuggerSetScriptSourceResultStatus `json:"status"`
+
+	// ExceptionDetails (optional) Exception details if any. Only present when `status` is `CompileError`.
 	ExceptionDetails *RuntimeExceptionDetails `json:"exceptionDetails,omitempty"`
 }
 
@@ -1070,7 +1132,7 @@ type DebuggerScriptFailedToParse struct {
 	// ExecutionContextID Specifies script creation context.
 	ExecutionContextID RuntimeExecutionContextID `json:"executionContextId"`
 
-	// Hash Content hash of the script.
+	// Hash Content hash of the script, SHA-256.
 	Hash string `json:"hash"`
 
 	// ExecutionContextAuxData (optional) Embedder-specific auxiliary data.
@@ -1131,7 +1193,7 @@ type DebuggerScriptParsed struct {
 	// ExecutionContextID Specifies script creation context.
 	ExecutionContextID RuntimeExecutionContextID `json:"executionContextId"`
 
-	// Hash Content hash of the script.
+	// Hash Content hash of the script, SHA-256.
 	Hash string `json:"hash"`
 
 	// ExecutionContextAuxData (optional) Embedder-specific auxiliary data.

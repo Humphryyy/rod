@@ -128,6 +128,12 @@ type EmulationUserAgentMetadata struct {
 
 	// Mobile ...
 	Mobile bool `json:"mobile"`
+
+	// Bitness (optional) ...
+	Bitness string `json:"bitness,omitempty"`
+
+	// Wow64 (optional) ...
+	Wow64 bool `json:"wow64,omitempty"`
 }
 
 // EmulationDisabledImageType (experimental) Enum of image types that can be disabled.
@@ -670,6 +676,23 @@ func (m EmulationSetDisabledImageTypes) ProtoReq() string { return "Emulation.se
 
 // Call sends the request
 func (m EmulationSetDisabledImageTypes) Call(c Client) error {
+	return call(m.ProtoReq(), m, nil, c)
+}
+
+// EmulationSetHardwareConcurrencyOverride (experimental) ...
+type EmulationSetHardwareConcurrencyOverride struct {
+
+	// HardwareConcurrency Hardware concurrency to report
+	HardwareConcurrency int `json:"hardwareConcurrency"`
+}
+
+// ProtoReq name
+func (m EmulationSetHardwareConcurrencyOverride) ProtoReq() string {
+	return "Emulation.setHardwareConcurrencyOverride"
+}
+
+// Call sends the request
+func (m EmulationSetHardwareConcurrencyOverride) Call(c Client) error {
 	return call(m.ProtoReq(), m, nil, c)
 }
 

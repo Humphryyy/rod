@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Humphryyy/rod/lib/input"
 	"github.com/ysmood/gson"
 
 	"github.com/Humphryyy/rod/lib/cdp"
@@ -206,15 +207,25 @@ func (el *Element) Shape() (*proto.DOMGetContentQuadsResult, error) {
 	return proto.DOMGetContentQuads{ObjectID: el.id()}.Call(el)
 }
 
-// Press is similar with Keyboard.Press.
+// Type is similar with Keyboard.Type.
 // Before the action, it will try to scroll to the element and focus on it.
-func (el *Element) Press(keys ...rune) error {
+func (el *Element) Type(keys ...input.Key) error {
 	err := el.Focus()
 	if err != nil {
 		return err
 	}
+	return el.page.Keyboard.Type(keys...)
+}
 
-	return el.page.Keyboard.Press(keys...)
+// KeyActions is similar with Page.KeyActions.
+// Before the action, it will try to scroll to the element and focus on it.
+func (el *Element) KeyActions() (*KeyActions, error) {
+	err := el.Focus()
+	if err != nil {
+		return nil, err
+	}
+
+	return el.page.KeyActions(), nil
 }
 
 // SelectText selects the text that matches the regular expression.
@@ -266,7 +277,7 @@ func (el *Element) Input(text string) error {
 		return err
 	}
 
-	err = el.page.Keyboard.InsertText(text)
+	err = el.page.InsertText(text)
 	_, _ = el.Evaluate(evalHelper(js.InputEvent).ByUser())
 	return err
 }
@@ -563,18 +574,7 @@ func (el *Element) WaitInteractable() (pt *proto.Point, err error) {
 
 // Wait until the js returns true
 func (el *Element) Wait(opts *EvalOptions) error {
-	return utils.Retry(el.ctx, el.sleeper(), func() (bool, error) {
-		res, err := el.Evaluate(opts.ByPromise().This(el.Object))
-		if err != nil {
-			return true, err
-		}
-
-		if res.Value.Bool() {
-			return true, nil
-		}
-
-		return false, nil
-	})
+	return el.page.Context(el.ctx).Sleeper(el.sleeper).Wait(opts.This(el.Object))
 }
 
 // WaitVisible until the element is visible

@@ -12,9 +12,9 @@ import (
 func main() {
 	page := rod.New().MustConnect().MustPage("https://github.com/search")
 
-	page.MustElement(`input[name=q]`).MustWaitVisible().MustInput("chromedp").MustPress(input.Enter)
+	page.MustElement(`input[name=q]`).MustWaitVisible().MustInput("chromedp").MustType(input.Enter)
 
-	res := page.MustElementR("a", "chromedp").MustParent().MustNext().MustText()
+	res := page.MustElementR("a", "chromedp").MustParent().MustParent().MustNext().MustText()
 
 	log.Printf("got: `%s`", strings.TrimSpace(res))
 }

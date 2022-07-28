@@ -33,7 +33,7 @@ func Example() {
 	page := browser.MustPage("https://github.com")
 
 	// We use css selector to get the search input element and input "git"
-	page.MustElement("input").MustInput("git").MustPress(input.Enter)
+	page.MustElement("input").MustInput("git").MustType(input.Enter)
 
 	// Wait until css selector get the element then get the text content of it.
 	text := page.MustElement(".codesearch-results p").MustText()
@@ -64,7 +64,7 @@ func Example() {
 // Rod provides a lot of debug options, you can set them with setter methods or use environment variables.
 // Doc for environment variables: https://pkg.go.dev/github.com/Humphryyy/rod/lib/defaults
 func Example_disable_headless_to_debug() {
-	// Headless runs the browser on foreground, you can also use env "rod=show"
+	// Headless runs the browser on foreground, you can also use flag "-rod=show"
 	// Devtools opens the tab in each new tab opened automatically
 	l := launcher.New().
 		Headless(false).
@@ -85,14 +85,14 @@ func Example_disable_headless_to_debug() {
 
 	// ServeMonitor plays screenshots of each tab. This feature is extremely
 	// useful when debugging with headless mode.
-	// You can also enable it with env rod=monitor
+	// You can also enable it with flag "-rod=monitor"
 	launcher.Open(browser.ServeMonitor(""))
 
 	defer browser.MustClose()
 
 	page := browser.MustPage("https://github.com/")
 
-	page.MustElement("input").MustInput("git").MustPress(input.Enter)
+	page.MustElement("input").MustInput("git").MustType(input.Enter)
 
 	text := page.MustElement(".codesearch-results p").MustText()
 
@@ -254,7 +254,7 @@ func Example_race_selectors() {
 	page := browser.MustPage("https://leetcode.com/accounts/login/")
 
 	page.MustElement("#id_login").MustInput(username)
-	page.MustElement("#id_password").MustInput(password).MustPress(input.Enter)
+	page.MustElement("#id_password").MustInput(password).MustType(input.Enter)
 
 	// It will keep retrying until one selector has found a match
 	elm := page.Race().Element(".nav-user-icon-base").MustHandle(func(e *rod.Element) {

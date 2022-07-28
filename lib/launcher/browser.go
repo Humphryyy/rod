@@ -1,11 +1,13 @@
 package launcher
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +16,7 @@ import (
 	"strings"
 	"sync"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/defaults"
 	"github.com/Humphryyy/rod/lib/utils"
@@ -55,6 +57,18 @@ func HostNPM(revision int) string {
 	)
 }
 
+// HostPlaywright to download browser
+func HostPlaywright(revision int) string {
+	rev := RevisionPlaywright
+	if !(runtime.GOOS == "linux" && runtime.GOARCH == "arm64") {
+		rev = revision
+	}
+	return fmt.Sprintf(
+		"https://playwright.azureedge.net/builds/chromium/%d/chromium-linux-arm64.zip",
+		rev,
+	)
+}
+
 // DefaultBrowserDir for downloaded browser. For unix is "$HOME/.cache/rod/browser",
 // for Windows it's "%APPDATA%\rod\browser"
 var DefaultBrowserDir = filepath.Join(map[string]string{
@@ -73,11 +87,11 @@ type Browser struct {
 	// Revision of the browser to use
 	Revision int
 
-	// Dir to download broweser.
+	// Dir to download browser.
 	Dir string
 
 	// Log to print output
-	Logger io.Writer
+	Logger utils.Logger
 
 	// LockPort a tcp port to prevent race downloading. Default is 2968 .
 	LockPort int
@@ -87,10 +101,10 @@ type Browser struct {
 func NewBrowser() *Browser {
 	return &Browser{
 		Context:  context.Background(),
-		Revision: DefaultRevision,
-		Hosts:    []Host{HostGoogle, HostNPM},
+		Revision: RevisionDefault,
+		Hosts:    []Host{HostGoogle, HostNPM, HostPlaywright},
 		Dir:      DefaultBrowserDir,
-		Logger:   os.Stdout,
+		Logger:   log.New(os.Stdout, "[launcher.Browser]", log.LstdFlags),
 		LockPort: defaults.LockPort,
 	}
 }
@@ -116,22 +130,35 @@ func (lc *Browser) Download() (err error) {
 
 	u, err := lc.fastestHost()
 	utils.E(err)
-	utils.E(os.RemoveAll(lc.Destination()))
+
+	if u == "" {
+		panic(fmt.Errorf("Can't find a browser binary for your OS, the doc might help https://go-rod.github.io/#/compatibility?id=os"))
+	}
+
 	return lc.download(lc.Context, u)
 }
 
 func (lc *Browser) fastestHost() (fastest string, err error) {
+	lc.Logger.Println("try to find the fastest host to download the browser binary")
+
 	setURL := sync.Once{}
 	ctx, cancel := context.WithCancel(lc.Context)
 	defer cancel()
 
+	wg := sync.WaitGroup{}
 	for _, host := range lc.Hosts {
 		u := host(lc.Revision)
 
+		lc.Logger.Println("check", u)
+		wg.Add(1)
+
 		go func() {
 			defer func() {
-				_ = recover()
-				cancel()
+				err := recover()
+				if err != nil {
+					lc.Logger.Println("check result:", err)
+				}
+				wg.Done()
 			}()
 
 			q, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
@@ -141,23 +168,25 @@ func (lc *Browser) fastestHost() (fastest string, err error) {
 			utils.E(err)
 			defer func() { _ = res.Body.Close() }()
 
-			buf := make([]byte, 64*1024) // a TCP packet won't be larger than 64KB
-			_, err = res.Body.Read(buf)
-			utils.E(err)
+			if res.StatusCode == http.StatusOK {
+				buf := make([]byte, 64*1024) // a TCP packet won't be larger than 64KB
+				_, err = res.Body.Read(buf)
+				utils.E(err)
 
-			setURL.Do(func() {
-				fastest = u
-			})
+				setURL.Do(func() {
+					fastest = u
+					cancel()
+				})
+			}
 		}()
 	}
-
-	<-ctx.Done()
+	wg.Wait()
 
 	return
 }
 
 func (lc *Browser) download(ctx context.Context, u string) error {
-	_, _ = fmt.Fprintln(lc.Logger, "Download:", u)
+	lc.Logger.Println("Download:", u)
 
 	zipPath := filepath.Join(lc.Dir, fmt.Sprintf("chromium-%d.zip", lc.Revision))
 
@@ -224,9 +253,20 @@ func (lc *Browser) MustGet() string {
 }
 
 // Exists returns true if the browser executable path exists.
+// If the executable is malformed it will return false.
 func (lc *Browser) Exists() bool {
 	_, err := os.Stat(lc.Destination())
-	return err == nil
+	if err != nil {
+		return false
+	}
+
+	cmd := exec.Command(lc.Destination(), "--headless", "--no-sandbox",
+		"--disable-gpu", "--dump-dom", "about:blank")
+	b, err := cmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+	return bytes.Contains(b, []byte(`<html><head></head><body></body></html>`))
 }
 
 // LookPath searches for the browser executable from often used paths on current operating system.
@@ -236,6 +276,11 @@ func LookPath() (found string, has bool) {
 			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 			"/Applications/Chromium.app/Contents/MacOS/Chromium",
 			"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+			"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+			"/usr/bin/google-chrome-stable",
+			"/usr/bin/google-chrome",
+			"/usr/bin/chromium",
+			"/usr/bin/chromium-browser",
 		},
 		"linux": {
 			"chrome",
@@ -245,9 +290,14 @@ func LookPath() (found string, has bool) {
 			"/usr/bin/microsoft-edge",
 			"chromium",
 			"chromium-browser",
+			"/usr/bin/google-chrome-stable",
+			"/usr/bin/chromium",
+			"/usr/bin/chromium-browser",
+			"/snap/bin/chromium",
 		},
 		"windows": append([]string{"chrome", "edge"}, expandWindowsExePaths(
 			`Google\Chrome\Application\chrome.exe`,
+			`Chromium\Application\chrome.exe`,
 			`Microsoft\Edge\Application\msedge.exe`,
 		)...),
 	}[runtime.GOOS]

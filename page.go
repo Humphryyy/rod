@@ -158,10 +158,8 @@ func (p *Page) Navigate(url string) error {
 		url = "about:blank"
 	}
 
-	err := p.StopLoading()
-	if err != nil {
-		return err
-	}
+	// try to stop loading
+	_ = p.StopLoading()
 
 	res, err := proto.PageNavigate{URL: url}.Call(p)
 	if err != nil {
@@ -592,10 +590,8 @@ func (p *Page) EvalOnNewDocument(js string) (remove func() error, err error) {
 }
 
 // Wait until the js returns true
-func (p *Page) Wait(this *proto.RuntimeRemoteObject, js string, params []interface{}) error {
+func (p *Page) Wait(opts *EvalOptions) error {
 	return utils.Retry(p.ctx, p.sleeper(), func() (bool, error) {
-		opts := Eval(js, params...).ByPromise().This(this)
-
 		res, err := p.Evaluate(opts)
 		if err != nil {
 			return true, err
@@ -607,7 +603,7 @@ func (p *Page) Wait(this *proto.RuntimeRemoteObject, js string, params []interfa
 
 // WaitElementsMoreThan Wait until there are more than <num> <selector> elements.
 func (p *Page) WaitElementsMoreThan(selector string, num int) error {
-	return p.Wait(nil, `(s, n) => document.querySelectorAll(s).length > n`, []interface{}{selector, num})
+	return p.Wait(Eval(`(s, n) => document.querySelectorAll(s).length > n`, selector, num))
 }
 
 // ObjectToJSON by object id

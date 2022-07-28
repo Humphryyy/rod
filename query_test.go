@@ -210,6 +210,14 @@ func TestPageRace(t *testing.T) {
 		MustHandle(func(e *rod.Element) { g.Eq("01", e.MustText()) }).MustDo()
 	g.Eq("01", p.Race().MustElementByJS("() => document.querySelector('button')", nil).MustDo().MustText())
 
+	raceFunc := func(p *rod.Page) (*rod.Element, error) {
+		el := p.MustElement("button")
+		g.Eq("01", el.MustText())
+		return el, nil
+	}
+	p.Race().ElementFunc(raceFunc).MustHandle(func(e *rod.Element) { g.Eq("01", e.MustText()) }).MustDo()
+	g.Eq("01", p.Race().ElementFunc(raceFunc).MustDo().MustText())
+
 	el, err := p.Sleeper(func() utils.Sleeper { return utils.CountSleeper(2) }).Race().
 		Element("not-exists").MustHandle(func(e *rod.Element) {}).
 		ElementX("//not-exists").
@@ -239,10 +247,10 @@ func TestPageRaceRetryInHandle(t *testing.T) {
 func TestPageElementX(t *testing.T) {
 	g := setup(t)
 
-	g.page.MustNavigate(g.srcFile("fixtures/click.html"))
+	g.page.MustNavigate(g.srcFile("fixtures/selector.html"))
 	g.page.MustElement("body")
-	name := g.page.MustElementX("//*[contains(text(), 'click')]").MustDescribe().LocalName
-	g.Eq("button", name)
+	txt := g.page.MustElementX("//div").MustElementX("./button").MustText()
+	g.Eq(txt, "02")
 }
 
 func TestPageElementsX(t *testing.T) {

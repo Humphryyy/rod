@@ -178,10 +178,10 @@ type FetchFulfillRequest struct {
 	// over the protocol as text.
 	BinaryResponseHeaders []byte `json:"binaryResponseHeaders,omitempty"`
 
-	// Body (optional) A response body. If absent, original response body will be used if
+	// Body A response body. If absent, original response body will be used if
 	// the request is intercepted at the response stage and empty body
 	// will be used if the request is intercepted at the request stage.
-	Body []byte `json:"body,omitempty"`
+	Body []byte `json:"body"`
 
 	// ResponsePhrase (optional) A textual representation of responseCode.
 	// If absent, a standard phrase matching responseCode is used.

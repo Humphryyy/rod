@@ -10,11 +10,17 @@ Query and modify DOM storage.
 
 */
 
+// DOMStorageSerializedStorageKey ...
+type DOMStorageSerializedStorageKey string
+
 // DOMStorageStorageID DOM Storage identifier.
 type DOMStorageStorageID struct {
 
-	// SecurityOrigin Security origin for the storage.
-	SecurityOrigin string `json:"securityOrigin"`
+	// SecurityOrigin (optional) Security origin for the storage.
+	SecurityOrigin string `json:"securityOrigin,omitempty"`
+
+	// StorageKey (optional) Represents a key by which DOM Storage keys its CachedStorageAreas
+	StorageKey DOMStorageSerializedStorageKey `json:"storageKey,omitempty"`
 
 	// IsLocalStorage Whether the storage is local storage (not session storage).
 	IsLocalStorage bool `json:"isLocalStorage"`

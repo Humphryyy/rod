@@ -1,8 +1,8 @@
-name: Check Examples
+name: Check Revision
 
 on:
   schedule:
-    - cron: '23 3 * * *'
+    - cron: '0 0 1 * *' # monthly
 
 jobs:
   run:
@@ -16,5 +16,5 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: |
-          go test -run Example ./...
-          go test ./lib/examples/e2e-testing
+          go run ./lib/launcher/revision
+          go generate

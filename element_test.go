@@ -227,14 +227,6 @@ func TestElementMoveMouseOut(t *testing.T) {
 	g.Err(btn.MoveMouseOut())
 }
 
-func TestMouseMoveErr(t *testing.T) {
-	g := setup(t)
-
-	p := g.page.MustNavigate(g.srcFile("fixtures/click.html"))
-	g.mc.stubErr(1, proto.InputDispatchMouseEvent{})
-	g.Err(p.Mouse.Move(10, 10, 1))
-}
-
 func TestElementContext(t *testing.T) {
 	g := setup(t)
 
@@ -294,87 +286,6 @@ func TestShadowDOM(t *testing.T) {
 	})
 }
 
-func TestPress(t *testing.T) {
-	g := setup(t)
-
-	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
-	el := p.MustElement("[type=text]")
-
-	el.MustPress('1', '2', input.Backspace, ' ')
-	el.MustPress([]rune("A b")...)
-
-	g.Eq("1 A b", el.MustText())
-
-	g.Panic(func() {
-		g.mc.stubErr(1, proto.DOMScrollIntoViewIfNeeded{})
-		el.MustPress(' ')
-	})
-	g.Panic(func() {
-		g.mc.stubErr(1, proto.DOMScrollIntoViewIfNeeded{})
-		el.MustSelectAllText()
-	})
-}
-
-func TestKeyDown(t *testing.T) {
-	g := setup(t)
-
-	p := g.page.MustNavigate(g.srcFile("fixtures/keys.html"))
-	p.MustElement("body")
-	p.Keyboard.MustDown('j')
-
-	g.True(p.MustHas("body[event=key-down-j]"))
-}
-
-func TestKeyUp(t *testing.T) {
-	g := setup(t)
-
-	p := g.page.MustNavigate(g.srcFile("fixtures/keys.html"))
-	p.MustElement("body")
-	p.Keyboard.MustUp('x')
-
-	g.True(p.MustHas("body[event=key-up-x]"))
-}
-
-func TestInput(t *testing.T) {
-	g := setup(t)
-
-	text := "雲の上は\nいつも晴れ"
-
-	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
-
-	{
-		el := p.MustElement("[contenteditable=true]").MustInput(text)
-		g.Eq(text, el.MustText())
-	}
-
-	el := p.MustElement("textarea")
-	el.MustInput(text)
-
-	g.Eq(text, el.MustText())
-	g.True(p.MustHas("[event=textarea-change]"))
-
-	g.Panic(func() {
-		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
-		el.MustText()
-	})
-	g.Panic(func() {
-		g.mc.stubErr(4, proto.RuntimeCallFunctionOn{})
-		el.MustInput("")
-	})
-	g.Panic(func() {
-		g.mc.stubErr(5, proto.RuntimeCallFunctionOn{})
-		el.MustInput("")
-	})
-	g.Panic(func() {
-		g.mc.stubErr(6, proto.RuntimeCallFunctionOn{})
-		el.MustInput("")
-	})
-	g.Panic(func() {
-		g.mc.stubErr(1, proto.InputInsertText{})
-		el.MustInput("")
-	})
-}
-
 func TestInputTime(t *testing.T) {
 	g := setup(t)
 
@@ -415,6 +326,13 @@ func TestInputTime(t *testing.T) {
 		g.mc.stubErr(7, proto.RuntimeCallFunctionOn{})
 		el.MustInputTime(now)
 	})
+}
+
+func TestElementInputDate(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
+	p.MustElement("[type=date]").MustInput("12")
 }
 
 func TestCheckbox(t *testing.T) {
@@ -587,7 +505,7 @@ func TestEnter(t *testing.T) {
 
 	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
 	el := p.MustElement("[type=submit]")
-	el.MustPress(input.Enter)
+	el.MustType(input.Enter)
 
 	g.True(p.MustHas("[event=submit]"))
 }
@@ -863,6 +781,23 @@ func TestElementEqual(t *testing.T) {
 	g.False(el1.MustEqual(el3))
 }
 
+func TestElementWait(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/describe.html"))
+	e1 := p.MustElement("body > ul > li")
+	g.Eq(e1.MustText(), "coffee")
+
+	params := []interface{}{1, 3, 4}
+	go func() {
+		utils.Sleep(0.3)
+		e1.MustEval(`(a, b, c) => this.innerText = 'x'.repeat(a + b + c)`, params...)
+	}()
+
+	e1.MustWait(`(a, b, c) => this.innerText.length === (a + b + c)`, params...)
+	g.Eq(e1.MustText(), "xxxxxxxx")
+}
+
 func TestElementFromPointErr(t *testing.T) {
 	g := setup(t)
 
@@ -897,7 +832,7 @@ func TestElementErrors(t *testing.T) {
 	err = el.Context(ctx).Focus()
 	g.Err(err)
 
-	err = el.Context(ctx).Press('a')
+	_, err = el.Context(ctx).KeyActions()
 	g.Err(err)
 
 	err = el.Context(ctx).Input("a")

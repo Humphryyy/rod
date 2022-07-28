@@ -51,6 +51,18 @@ type PageAdFrameStatus struct {
 	Explanations []PageAdFrameExplanation `json:"explanations,omitempty"`
 }
 
+// PageAdScriptID (experimental) Identifies the bottom-most script which caused the frame to be labelled
+// as an ad.
+type PageAdScriptID struct {
+
+	// ScriptID Script Id of the bottom-most script which caused the frame to be labelled
+	// as an ad.
+	ScriptID RuntimeScriptID `json:"scriptId"`
+
+	// DebuggerID Id of adScriptId's debugger.
+	DebuggerID RuntimeUniqueDebuggerID `json:"debuggerId"`
+}
+
 // PageSecureContextType (experimental) Indicates whether the frame is a secure context and why it is the case.
 type PageSecureContextType string
 
@@ -116,6 +128,9 @@ const (
 	// PagePermissionsPolicyFeatureAutoplay enum const
 	PagePermissionsPolicyFeatureAutoplay PagePermissionsPolicyFeature = "autoplay"
 
+	// PagePermissionsPolicyFeatureBluetooth enum const
+	PagePermissionsPolicyFeatureBluetooth PagePermissionsPolicyFeature = "bluetooth"
+
 	// PagePermissionsPolicyFeatureBrowsingTopics enum const
 	PagePermissionsPolicyFeatureBrowsingTopics PagePermissionsPolicyFeature = "browsing-topics"
 
@@ -133,9 +148,6 @@ const (
 
 	// PagePermissionsPolicyFeatureChEct enum const
 	PagePermissionsPolicyFeatureChEct PagePermissionsPolicyFeature = "ch-etc"
-
-	// PagePermissionsPolicyFeatureChPartitionedCookies enum const
-	PagePermissionsPolicyFeatureChPartitionedCookies PagePermissionsPolicyFeature = "ch-partitioned-cookies"
 
 	// PagePermissionsPolicyFeatureChPrefersColorScheme enum const
 	PagePermissionsPolicyFeatureChPrefersColorScheme PagePermissionsPolicyFeature = "ch-prefers-color-scheme"
@@ -218,6 +230,9 @@ const (
 	// PagePermissionsPolicyFeatureExecutionWhileNotRendered enum const
 	PagePermissionsPolicyFeatureExecutionWhileNotRendered PagePermissionsPolicyFeature = "execution-while-not-rendered"
 
+	// PagePermissionsPolicyFeatureFederatedCredentials enum const
+	PagePermissionsPolicyFeatureFederatedCredentials PagePermissionsPolicyFeature = "federated-credentials"
+
 	// PagePermissionsPolicyFeatureFocusWithoutUserActivation enum const
 	PagePermissionsPolicyFeatureFocusWithoutUserActivation PagePermissionsPolicyFeature = "focus-without-user-activation"
 
@@ -250,6 +265,9 @@ const (
 
 	// PagePermissionsPolicyFeatureKeyboardMap enum const
 	PagePermissionsPolicyFeatureKeyboardMap PagePermissionsPolicyFeature = "keyboard-map"
+
+	// PagePermissionsPolicyFeatureLocalFonts enum const
+	PagePermissionsPolicyFeatureLocalFonts PagePermissionsPolicyFeature = "local-fonts"
 
 	// PagePermissionsPolicyFeatureMagnetometer enum const
 	PagePermissionsPolicyFeatureMagnetometer PagePermissionsPolicyFeature = "magnetometer"
@@ -321,6 +339,9 @@ const (
 
 	// PagePermissionsPolicyBlockReasonInFencedFrameTree enum const
 	PagePermissionsPolicyBlockReasonInFencedFrameTree PagePermissionsPolicyBlockReason = "InFencedFrameTree"
+
+	// PagePermissionsPolicyBlockReasonInIsolatedApp enum const
+	PagePermissionsPolicyBlockReasonInIsolatedApp PagePermissionsPolicyBlockReason = "InIsolatedApp"
 )
 
 // PagePermissionsPolicyBlockLocator (experimental) ...
@@ -776,6 +797,9 @@ type PageFontFamilies struct {
 
 	// Fantasy (optional) The fantasy font-family.
 	Fantasy string `json:"fantasy,omitempty"`
+
+	// Math (optional) The math font-family.
+	Math string `json:"math,omitempty"`
 }
 
 // PageScriptFontFamilies (experimental) Font families collection for a script.
@@ -967,9 +991,6 @@ const (
 	// PageBackForwardCacheNotRestoredReasonRendererProcessCrashed enum const
 	PageBackForwardCacheNotRestoredReasonRendererProcessCrashed PageBackForwardCacheNotRestoredReason = "RendererProcessCrashed"
 
-	// PageBackForwardCacheNotRestoredReasonGrantedMediaStreamAccess enum const
-	PageBackForwardCacheNotRestoredReasonGrantedMediaStreamAccess PageBackForwardCacheNotRestoredReason = "GrantedMediaStreamAccess"
-
 	// PageBackForwardCacheNotRestoredReasonSchedulerTrackedFeatureUsed enum const
 	PageBackForwardCacheNotRestoredReasonSchedulerTrackedFeatureUsed PageBackForwardCacheNotRestoredReason = "SchedulerTrackedFeatureUsed"
 
@@ -1047,9 +1068,6 @@ const (
 
 	// PageBackForwardCacheNotRestoredReasonBackForwardCacheDisabledForDelegate enum const
 	PageBackForwardCacheNotRestoredReasonBackForwardCacheDisabledForDelegate PageBackForwardCacheNotRestoredReason = "BackForwardCacheDisabledForDelegate"
-
-	// PageBackForwardCacheNotRestoredReasonOptInUnloadHeaderNotPresent enum const
-	PageBackForwardCacheNotRestoredReasonOptInUnloadHeaderNotPresent PageBackForwardCacheNotRestoredReason = "OptInUnloadHeaderNotPresent"
 
 	// PageBackForwardCacheNotRestoredReasonUnloadHandlerExistsInMainFrame enum const
 	PageBackForwardCacheNotRestoredReasonUnloadHandlerExistsInMainFrame PageBackForwardCacheNotRestoredReason = "UnloadHandlerExistsInMainFrame"
@@ -1240,9 +1258,6 @@ const (
 	// PageBackForwardCacheNotRestoredReasonContentWebUSB enum const
 	PageBackForwardCacheNotRestoredReasonContentWebUSB PageBackForwardCacheNotRestoredReason = "ContentWebUSB"
 
-	// PageBackForwardCacheNotRestoredReasonContentMediaSession enum const
-	PageBackForwardCacheNotRestoredReasonContentMediaSession PageBackForwardCacheNotRestoredReason = "ContentMediaSession"
-
 	// PageBackForwardCacheNotRestoredReasonContentMediaSessionService enum const
 	PageBackForwardCacheNotRestoredReasonContentMediaSessionService PageBackForwardCacheNotRestoredReason = "ContentMediaSessionService"
 
@@ -1343,6 +1358,102 @@ type PagePrerenderFinalStatus string
 const (
 	// PagePrerenderFinalStatusActivated enum const
 	PagePrerenderFinalStatusActivated PagePrerenderFinalStatus = "Activated"
+
+	// PagePrerenderFinalStatusDestroyed enum const
+	PagePrerenderFinalStatusDestroyed PagePrerenderFinalStatus = "Destroyed"
+
+	// PagePrerenderFinalStatusLowEndDevice enum const
+	PagePrerenderFinalStatusLowEndDevice PagePrerenderFinalStatus = "LowEndDevice"
+
+	// PagePrerenderFinalStatusCrossOriginRedirect enum const
+	PagePrerenderFinalStatusCrossOriginRedirect PagePrerenderFinalStatus = "CrossOriginRedirect"
+
+	// PagePrerenderFinalStatusCrossOriginNavigation enum const
+	PagePrerenderFinalStatusCrossOriginNavigation PagePrerenderFinalStatus = "CrossOriginNavigation"
+
+	// PagePrerenderFinalStatusInvalidSchemeRedirect enum const
+	PagePrerenderFinalStatusInvalidSchemeRedirect PagePrerenderFinalStatus = "InvalidSchemeRedirect"
+
+	// PagePrerenderFinalStatusInvalidSchemeNavigation enum const
+	PagePrerenderFinalStatusInvalidSchemeNavigation PagePrerenderFinalStatus = "InvalidSchemeNavigation"
+
+	// PagePrerenderFinalStatusInProgressNavigation enum const
+	PagePrerenderFinalStatusInProgressNavigation PagePrerenderFinalStatus = "InProgressNavigation"
+
+	// PagePrerenderFinalStatusNavigationRequestBlockedByCsp enum const
+	PagePrerenderFinalStatusNavigationRequestBlockedByCsp PagePrerenderFinalStatus = "NavigationRequestBlockedByCsp"
+
+	// PagePrerenderFinalStatusMainFrameNavigation enum const
+	PagePrerenderFinalStatusMainFrameNavigation PagePrerenderFinalStatus = "MainFrameNavigation"
+
+	// PagePrerenderFinalStatusMojoBinderPolicy enum const
+	PagePrerenderFinalStatusMojoBinderPolicy PagePrerenderFinalStatus = "MojoBinderPolicy"
+
+	// PagePrerenderFinalStatusRendererProcessCrashed enum const
+	PagePrerenderFinalStatusRendererProcessCrashed PagePrerenderFinalStatus = "RendererProcessCrashed"
+
+	// PagePrerenderFinalStatusRendererProcessKilled enum const
+	PagePrerenderFinalStatusRendererProcessKilled PagePrerenderFinalStatus = "RendererProcessKilled"
+
+	// PagePrerenderFinalStatusDownload enum const
+	PagePrerenderFinalStatusDownload PagePrerenderFinalStatus = "Download"
+
+	// PagePrerenderFinalStatusTriggerDestroyed enum const
+	PagePrerenderFinalStatusTriggerDestroyed PagePrerenderFinalStatus = "TriggerDestroyed"
+
+	// PagePrerenderFinalStatusNavigationNotCommitted enum const
+	PagePrerenderFinalStatusNavigationNotCommitted PagePrerenderFinalStatus = "NavigationNotCommitted"
+
+	// PagePrerenderFinalStatusNavigationBadHTTPStatus enum const
+	PagePrerenderFinalStatusNavigationBadHTTPStatus PagePrerenderFinalStatus = "NavigationBadHttpStatus"
+
+	// PagePrerenderFinalStatusClientCertRequested enum const
+	PagePrerenderFinalStatusClientCertRequested PagePrerenderFinalStatus = "ClientCertRequested"
+
+	// PagePrerenderFinalStatusNavigationRequestNetworkError enum const
+	PagePrerenderFinalStatusNavigationRequestNetworkError PagePrerenderFinalStatus = "NavigationRequestNetworkError"
+
+	// PagePrerenderFinalStatusMaxNumOfRunningPrerendersExceeded enum const
+	PagePrerenderFinalStatusMaxNumOfRunningPrerendersExceeded PagePrerenderFinalStatus = "MaxNumOfRunningPrerendersExceeded"
+
+	// PagePrerenderFinalStatusCancelAllHostsForTesting enum const
+	PagePrerenderFinalStatusCancelAllHostsForTesting PagePrerenderFinalStatus = "CancelAllHostsForTesting"
+
+	// PagePrerenderFinalStatusDidFailLoad enum const
+	PagePrerenderFinalStatusDidFailLoad PagePrerenderFinalStatus = "DidFailLoad"
+
+	// PagePrerenderFinalStatusStop enum const
+	PagePrerenderFinalStatusStop PagePrerenderFinalStatus = "Stop"
+
+	// PagePrerenderFinalStatusSslCertificateError enum const
+	PagePrerenderFinalStatusSslCertificateError PagePrerenderFinalStatus = "SslCertificateError"
+
+	// PagePrerenderFinalStatusLoginAuthRequested enum const
+	PagePrerenderFinalStatusLoginAuthRequested PagePrerenderFinalStatus = "LoginAuthRequested"
+
+	// PagePrerenderFinalStatusUaChangeRequiresReload enum const
+	PagePrerenderFinalStatusUaChangeRequiresReload PagePrerenderFinalStatus = "UaChangeRequiresReload"
+
+	// PagePrerenderFinalStatusBlockedByClient enum const
+	PagePrerenderFinalStatusBlockedByClient PagePrerenderFinalStatus = "BlockedByClient"
+
+	// PagePrerenderFinalStatusAudioOutputDeviceRequested enum const
+	PagePrerenderFinalStatusAudioOutputDeviceRequested PagePrerenderFinalStatus = "AudioOutputDeviceRequested"
+
+	// PagePrerenderFinalStatusMixedContent enum const
+	PagePrerenderFinalStatusMixedContent PagePrerenderFinalStatus = "MixedContent"
+
+	// PagePrerenderFinalStatusTriggerBackgrounded enum const
+	PagePrerenderFinalStatusTriggerBackgrounded PagePrerenderFinalStatus = "TriggerBackgrounded"
+
+	// PagePrerenderFinalStatusEmbedderTriggeredAndSameOriginRedirected enum const
+	PagePrerenderFinalStatusEmbedderTriggeredAndSameOriginRedirected PagePrerenderFinalStatus = "EmbedderTriggeredAndSameOriginRedirected"
+
+	// PagePrerenderFinalStatusEmbedderTriggeredAndCrossOriginRedirected enum const
+	PagePrerenderFinalStatusEmbedderTriggeredAndCrossOriginRedirected PagePrerenderFinalStatus = "EmbedderTriggeredAndCrossOriginRedirected"
+
+	// PagePrerenderFinalStatusEmbedderTriggeredAndDestroyed enum const
+	PagePrerenderFinalStatusEmbedderTriggeredAndDestroyed PagePrerenderFinalStatus = "EmbedderTriggeredAndDestroyed"
 )
 
 // PageAddScriptToEvaluateOnLoad (deprecated) (experimental) Deprecated, please use addScriptToEvaluateOnNewDocument instead.
@@ -1911,7 +2022,8 @@ type PageNavigateResult struct {
 	// FrameID Frame id that has navigated (or failed to navigate)
 	FrameID PageFrameID `json:"frameId"`
 
-	// LoaderID (optional) Loader identifier.
+	// LoaderID (optional) Loader identifier. This is omitted in case of same-document navigation,
+	// as the previously committed loaderId would not change.
 	LoaderID NetworkLoaderID `json:"loaderId,omitempty"`
 
 	// ErrorText (optional) User friendly error message, present if and only if navigation has failed.
@@ -1977,13 +2089,15 @@ type PagePrintToPDF struct {
 	// MarginRight (optional) Right margin in inches. Defaults to 1cm (~0.4 inches).
 	MarginRight *float64 `json:"marginRight,omitempty"`
 
-	// PageRanges (optional) Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
-	// print all pages.
+	// PageRanges (optional) Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are
+	// printed in the document order, not in the order specified, and no
+	// more than once.
+	// Defaults to empty string, which implies the entire document is printed.
+	// The page numbers are quietly capped to actual page count of the
+	// document, and ranges beyond the end of the document are ignored.
+	// If this results in no pages to print, an error is reported.
+	// It is an error to specify a range with start greater than end.
 	PageRanges string `json:"pageRanges,omitempty"`
-
-	// IgnoreInvalidPageRanges (optional) Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
-	// Defaults to false.
-	IgnoreInvalidPageRanges bool `json:"ignoreInvalidPageRanges,omitempty"`
 
 	// HeaderTemplate (optional) HTML template for the print header. Should be valid HTML markup with following
 	// classes used to inject printing values into them:
@@ -2702,11 +2816,11 @@ type PageFileChooserOpened struct {
 	// FrameID (experimental) Id of the frame containing input node.
 	FrameID PageFrameID `json:"frameId"`
 
-	// BackendNodeID (experimental) Input node id.
-	BackendNodeID DOMBackendNodeID `json:"backendNodeId"`
-
 	// Mode Input mode.
 	Mode PageFileChooserOpenedMode `json:"mode"`
+
+	// BackendNodeID (experimental) (optional) Input node id. Only present for file choosers opened via an <input type="file"> element.
+	BackendNodeID DOMBackendNodeID `json:"backendNodeId,omitempty"`
 }
 
 // ProtoEvent name
@@ -2725,6 +2839,10 @@ type PageFrameAttached struct {
 
 	// Stack (optional) JavaScript stack trace of when frame was attached, only set if frame initiated from script.
 	Stack *RuntimeStackTrace `json:"stack,omitempty"`
+
+	// AdScriptID (experimental) (optional) Identifies the bottom-most script which caused the frame to be labelled
+	// as an ad. Only sent if frame is labelled as an ad and id is available.
+	AdScriptID *PageAdScriptID `json:"adScriptId,omitempty"`
 }
 
 // ProtoEvent name
