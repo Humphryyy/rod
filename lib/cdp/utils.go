@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"net"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/utils"
 )

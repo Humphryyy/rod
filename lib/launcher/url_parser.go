@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/utils"
 	"github.com/ysmood/gson"

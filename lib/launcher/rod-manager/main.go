@@ -8,7 +8,7 @@ import (
 	"net"
 	"os"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/launcher"
 	"github.com/Humphryyy/rod/lib/utils"

@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Carcraftz/fhttp/httputil"
+	"github.com/saucesteals/fhttp/httputil"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/cdp"
 	"github.com/Humphryyy/rod/lib/launcher/flags"

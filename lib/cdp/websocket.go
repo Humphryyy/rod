@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"sync"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 )
 
 var _ WebSocketable = &WebSocket{}
