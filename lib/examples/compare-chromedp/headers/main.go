@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod"
 )

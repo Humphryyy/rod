@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	http "github.com/Carcraftz/fhttp"
+	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod"
 )
