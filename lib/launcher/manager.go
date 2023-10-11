@@ -92,19 +92,18 @@ func (l *Launcher) mustManaged() {
 var _ http.Handler = &Manager{}
 
 // Manager is used to launch browsers via http server on another machine.
-// The reason why we have Manager is after we launcher a browser, we can't dynamicall change its
+// The reason why we have Manager is after we launcher a browser, we can't dynamically change its
 // CLI arguments, such as "--headless". The Manager allows us to decide what CLI arguments to
 // pass to the browser when launch it remotely.
 // The work flow looks like:
 //
-//     |      Machine X       |                             Machine Y                                    |
-//     | NewManaged("a.com") -|-> http.ListenAndServe("a.com", launcher.NewManager()) --> launch browser |
+//	|      Machine X       |                             Machine Y                                    |
+//	| NewManaged("a.com") -|-> http.ListenAndServe("a.com", launcher.NewManager()) --> launch browser |
 //
-//     1. X send a http request to Y, Y respond default Launcher settings based the OS of Y.
-//     2. X start a websocket connect to Y with the Launcher settings
-//     3. Y launches a browser with the Launcher settings X
-//     4. Y transparently proxy the websocket connect between X and the launched browser
-//
+//	1. X send a http request to Y, Y respond default Launcher settings based the OS of Y.
+//	2. X start a websocket connect to Y with the Launcher settings
+//	3. Y launches a browser with the Launcher settings X
+//	4. Y transparently proxy the websocket connect between X and the launched browser
 type Manager struct {
 	// Logger for key events
 	Logger utils.Logger
@@ -136,7 +135,7 @@ func NewManager() *Manager {
 			for f, allowed := range allowedPath {
 				p := l.Get(f)
 				if p != "" && !strings.HasPrefix(p, allowed) {
-					b := []byte(fmt.Sprintf("not allowed %s path: %s", f, p))
+					b := []byte(fmt.Sprintf("[rod-manager] not allowed %s path: %s (use --allow-all to disable the protection)", f, p))
 					w.Header().Add("Content-Length", fmt.Sprintf("%d", len(b)))
 					w.WriteHeader(http.StatusBadRequest)
 					utils.E(w.Write(b))

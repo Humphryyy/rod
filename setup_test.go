@@ -64,12 +64,22 @@ var setup = func(t *testing.T) G {
 type G struct {
 	got.G
 
-	mc            *MockClient
-	browser       *rod.Browser
-	page          *rod.Page
+	// mock client for proxy the cdp requests
+	mc *MockClient
+
+	// a random browser instance from the pool. If you have changed state of it, you must reset it
+	// or it may affect other test cases.
+	browser *rod.Browser
+
+	// a random page instance from the pool. If you have changed state of it, you must reset it
+	// or it may affect other test cases.
+	page *rod.Page
+
+	// use it to cancel the TimeoutEach for each test case
 	cancelTimeout func()
 }
 
+// TesterPool if we don't use pool to cache, the total time will be much longer.
 type TesterPool struct {
 	pool     chan *G
 	parallel int
@@ -96,7 +106,7 @@ func newTesterPool() TesterPool {
 
 // new tester
 func (tp TesterPool) new() *G {
-	u := launcher.New().MustLaunch()
+	u := launcher.New().Set("proxy-bypass-list", "<-loopback>").MustLaunch()
 
 	mc := newMockClient(u)
 
@@ -132,7 +142,7 @@ func (tp TesterPool) get(t *testing.T) G {
 
 	tester.G = got.New(t)
 	tester.mc.t = t
-	tester.mc.log.SetOutput(tester.Open(true, LogDir, tester.mc.id, t.Name()+".log"))
+	tester.mc.log.SetOutput(tester.Open(true, filepath.Join(LogDir, tester.mc.id, t.Name()+".log")))
 
 	tester.checkLeaking()
 
@@ -159,9 +169,14 @@ func (g G) blank() string {
 	return g.srcFile("./fixtures/blank.html")
 }
 
+func (g G) html(content string) string {
+	return g.Serve().Route("/", "", content).URL()
+}
+
 // Get abs file path from fixtures folder, such as "file:///a/b/click.html".
 // Usually the path can be used for html src attribute like:
-//     <img src="file:///a/b">
+//
+//	<img src="file:///a/b">
 func (g G) srcFile(path string) string {
 	g.Helper()
 	f, err := filepath.Abs(slash(path))
@@ -290,11 +305,11 @@ func (mc *MockClient) resetCall() {
 // Use it to find out which cdp call to intercept. Put a print like log.Println("*****") after the cdp call you want to intercept.
 // The output of the test should has something like:
 //
-//     [stubCounter] begin
-//     [stubCounter] 1, proto.DOMResolveNode{}
-//     [stubCounter] 1, proto.RuntimeCallFunctionOn{}
-//     [stubCounter] 2, proto.RuntimeCallFunctionOn{}
-//     01:49:43 *****
+//	[stubCounter] begin
+//	[stubCounter] 1, proto.DOMResolveNode{}
+//	[stubCounter] 1, proto.RuntimeCallFunctionOn{}
+//	[stubCounter] 2, proto.RuntimeCallFunctionOn{}
+//	01:49:43 *****
 //
 // So the 3rd call is the one we want to intercept, then you can use the output with s.at or s.errorAt.
 func (mc *MockClient) stubCounter() {

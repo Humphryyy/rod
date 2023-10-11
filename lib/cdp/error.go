@@ -58,8 +58,8 @@ var ErrNodeNotFoundAtPos = &Error{
 	Message: "No node found at given location",
 }
 
-// ErrNoContentQuads type
-var ErrNoContentQuads = &Error{
+// ErrNotAttachedToActivePage type
+var ErrNotAttachedToActivePage = &Error{
 	Code:    -32000,
-	Message: "Could not compute content quads.",
+	Message: "Not attached to an active page",
 }

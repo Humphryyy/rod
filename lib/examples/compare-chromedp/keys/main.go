@@ -1,3 +1,4 @@
+// Package main ...
 package main
 
 import (
@@ -8,7 +9,6 @@ import (
 	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod"
-	"github.com/Humphryyy/rod/lib/input"
 )
 
 var flagPort = flag.Int("port", 8544, "port")
@@ -28,12 +28,11 @@ func main() {
 	val1 := page.MustElement("#input1").MustText()
 	val2 := page.MustElement("#textarea1").MustInput("\\b\\b\\n\\naoeu\\n\\ntest1\\n\\nblah2\\n\\n\\t\\t\\t\\b\\bother box!\\t\\ntest4").MustText()
 	val3 := page.MustElement("#input2").MustInput("test3").MustText()
-	val4 := page.MustElement("#select1").MustPress(input.ArrowDown).MustPress(input.ArrowDown).MustEval("() => this.value")
 
 	log.Printf("#input1 value: %s", val1)
 	log.Printf("#textarea1 value: %s", val2)
 	log.Printf("#input2 value: %s", val3)
-	log.Printf("#select1 value: %s", val4)
+
 }
 
 // testServer is a simple HTTP server that displays elements and inputs

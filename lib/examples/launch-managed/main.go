@@ -1,3 +1,4 @@
+// Package main ...
 package main
 
 import (
@@ -11,10 +12,11 @@ import (
 func main() {
 	// This example is to launch a browser remotely, not connect to a running browser remotely,
 	// to connect to a running browser check the "../connect-browser" example.
-	// Rod provides a docker image for beginers, run the below to start a launcher.Manager:
+	// Rod provides a docker image for beginners, run the below to start a launcher.Manager:
 	//
 	//     docker run -p 7317:7317 ghcr.io/go-rod/rod
 	//
+	// For available CLI flags run: docker run ghcr.io/go-rod/rod rod-manager -h
 	// For more information, check the doc of launcher.Manager
 	l := launcher.MustNewManaged("")
 
@@ -32,6 +34,18 @@ func main() {
 
 	fmt.Println(
 		browser.MustPage("https://mdn.dev/").MustEval("() => document.title"),
+	)
+
+	// Launch another browser with the same docker container.
+	ll := launcher.MustNewManaged("")
+
+	// You can set different flags for each browser.
+	ll.Set("disable-sync").Delete("disable-sync")
+
+	anotherBrowser := rod.New().Client(ll.MustClient()).MustConnect()
+
+	fmt.Println(
+		anotherBrowser.MustPage("https://go-rod.github.io").MustEval("() => document.title"),
 	)
 
 	utils.Pause()

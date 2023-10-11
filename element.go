@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -67,7 +66,7 @@ func (el *Element) Focus() error {
 // window if it's not already within the visible area.
 func (el *Element) ScrollIntoView() error {
 	defer el.tryTrace(TraceTypeInput, "scroll into view")()
-	el.page.browser.trySlowmotion()
+	el.page.browser.trySlowMotion()
 
 	err := el.WaitStableRAF()
 	if err != nil {
@@ -85,7 +84,7 @@ func (el *Element) Hover() error {
 		return err
 	}
 
-	return el.page.Mouse.Move(pt.X, pt.Y, 1)
+	return el.page.Context(el.ctx).Mouse.MoveTo(*pt)
 }
 
 // MoveMouseOut of the current element
@@ -95,13 +94,13 @@ func (el *Element) MoveMouseOut() error {
 		return err
 	}
 	box := shape.Box()
-	return el.page.Mouse.Move(box.X+box.Width, box.Y, 1)
+	return el.page.Mouse.MoveTo(proto.NewPoint(box.X+box.Width, box.Y))
 }
 
 // Click will press then release the button just like a human.
 // Before the action, it will try to scroll to the element, hover the mouse over it,
 // wait until the it's interactable and enabled.
-func (el *Element) Click(button proto.InputMouseButton) error {
+func (el *Element) Click(button proto.InputMouseButton, clickCount int) error {
 	err := el.Hover()
 	if err != nil {
 		return err
@@ -114,7 +113,7 @@ func (el *Element) Click(button proto.InputMouseButton) error {
 
 	defer el.tryTrace(TraceTypeInput, string(button)+" click")()
 
-	return el.page.Mouse.Click(button)
+	return el.page.Context(el.ctx).Mouse.Click(button, clickCount)
 }
 
 // Tap will scroll to the button and tap it just like a human.
@@ -137,7 +136,7 @@ func (el *Element) Tap() error {
 
 	defer el.tryTrace(TraceTypeInput, "tap")()
 
-	return el.page.Touch.Tap(pt.X, pt.Y)
+	return el.page.Context(el.ctx).Touch.Tap(pt.X, pt.Y)
 }
 
 // Interactable checks if the element is interactable with cursor.
@@ -155,11 +154,7 @@ func (el *Element) Interactable() (pt *proto.Point, err error) {
 
 	shape, err := el.Shape()
 	if err != nil {
-		// such as when css is "display: none"
-		if errors.Is(err, cdp.ErrNoContentQuads) {
-			err = &ErrInvisibleShape{el}
-		}
-		return
+		return nil, err
 	}
 
 	pt = shape.OnePointInside()
@@ -168,12 +163,12 @@ func (el *Element) Interactable() (pt *proto.Point, err error) {
 		return
 	}
 
-	scroll, err := el.page.root.Eval(`() => ({ x: window.scrollX, y: window.scrollY })`)
+	scroll, err := el.page.root.Context(el.ctx).Eval(`() => ({ x: window.scrollX, y: window.scrollY })`)
 	if err != nil {
 		return
 	}
 
-	elAtPoint, err := el.page.ElementFromPoint(
+	elAtPoint, err := el.page.Context(el.ctx).ElementFromPoint(
 		int(pt.X)+scroll.Value.Get("x").Int(),
 		int(pt.Y)+scroll.Value.Get("y").Int(),
 	)
@@ -195,14 +190,13 @@ func (el *Element) Interactable() (pt *proto.Point, err error) {
 	return
 }
 
-// Shape of the DOM element content. The shape is a group of 4-sides polygons (4-gons).
-// A 4-gon is not necessary a rectangle. 4-gons can be apart from each other.
-// For example, we use 2 4-gons to describe the shape below:
+// Shape of the DOM element content. The shape is a group of 4-sides polygons.
+// A 4-sides polygon is not necessary a rectangle. 4-sides polygons can be apart from each other.
+// For example, we use 2 4-sides polygons to describe the shape below:
 //
-//       ____________          ____________
-//      /        ___/    =    /___________/    +     _________
-//     /________/                                   /________/
-//
+//	  ____________          ____________
+//	 /        ___/    =    /___________/    +     _________
+//	/________/                                   /________/
 func (el *Element) Shape() (*proto.DOMGetContentQuadsResult, error) {
 	return proto.DOMGetContentQuads{ObjectID: el.id()}.Call(el)
 }
@@ -214,7 +208,7 @@ func (el *Element) Type(keys ...input.Key) error {
 	if err != nil {
 		return err
 	}
-	return el.page.Keyboard.Type(keys...)
+	return el.page.Context(el.ctx).Keyboard.Type(keys...)
 }
 
 // KeyActions is similar with Page.KeyActions.
@@ -225,7 +219,7 @@ func (el *Element) KeyActions() (*KeyActions, error) {
 		return nil, err
 	}
 
-	return el.page.KeyActions(), nil
+	return el.page.Context(el.ctx).KeyActions(), nil
 }
 
 // SelectText selects the text that matches the regular expression.
@@ -237,7 +231,7 @@ func (el *Element) SelectText(regex string) error {
 	}
 
 	defer el.tryTrace(TraceTypeInput, "select text: "+regex)()
-	el.page.browser.trySlowmotion()
+	el.page.browser.trySlowMotion()
 
 	_, err = el.Evaluate(evalHelper(js.SelectText, regex).ByUser())
 	return err
@@ -252,7 +246,7 @@ func (el *Element) SelectAllText() error {
 	}
 
 	defer el.tryTrace(TraceTypeInput, "select all text")()
-	el.page.browser.trySlowmotion()
+	el.page.browser.trySlowMotion()
 
 	_, err = el.Evaluate(evalHelper(js.SelectAllText).ByUser())
 	return err
@@ -277,7 +271,7 @@ func (el *Element) Input(text string) error {
 		return err
 	}
 
-	err = el.page.InsertText(text)
+	err = el.page.Context(el.ctx).InsertText(text)
 	_, _ = el.Evaluate(evalHelper(js.InputEvent).ByUser())
 	return err
 }
@@ -323,7 +317,7 @@ func (el *Element) Select(selectors []string, selected bool, t SelectorType) err
 	}
 
 	defer el.tryTrace(TraceTypeInput, fmt.Sprintf(`select "%s"`, strings.Join(selectors, "; ")))()
-	el.page.browser.trySlowmotion()
+	el.page.browser.trySlowMotion()
 
 	res, err := el.Evaluate(evalHelper(js.Select, selectors, selected, t).ByUser())
 	if err != nil {
@@ -371,17 +365,21 @@ func (el *Element) Property(name string) (gson.JSON, error) {
 	return prop.Value, nil
 }
 
+// Disabled checks if the element is disabled.
+func (el *Element) Disabled() (bool, error) {
+	prop, err := el.Property("disabled")
+	if err != nil {
+		return false, err
+	}
+	return prop.Bool(), nil
+}
+
 // SetFiles of the current file input element
 func (el *Element) SetFiles(paths []string) error {
-	absPaths := []string{}
-	for _, p := range paths {
-		absPath, err := filepath.Abs(p)
-		utils.E(err)
-		absPaths = append(absPaths, absPath)
-	}
+	absPaths := utils.AbsolutePaths(paths)
 
 	defer el.tryTrace(TraceTypeInput, fmt.Sprintf("set files: %v", absPaths))()
-	el.page.browser.trySlowmotion()
+	el.page.browser.trySlowMotion()
 
 	err := proto.DOMSetFileInputFiles{
 		Files:    absPaths,
@@ -413,6 +411,9 @@ func (el *Element) ShadowRoot() (*Element, error) {
 	}
 
 	// though now it's an array, w3c changed the spec of it to be a single.
+	if len(node.ShadowRoots) == 0 {
+		return nil, &ErrNoShadowRoot{el}
+	}
 	id := node.ShadowRoots[0].BackendNodeID
 
 	shadowNode, err := proto.DOMResolveNode{BackendNodeID: id}.Call(el)
@@ -420,7 +421,7 @@ func (el *Element) ShadowRoot() (*Element, error) {
 		return nil, err
 	}
 
-	return el.page.ElementFromObject(shadowNode.Object)
+	return el.page.Context(el.ctx).ElementFromObject(shadowNode.Object)
 }
 
 // Frame creates a page instance that represents the iframe
@@ -531,9 +532,10 @@ func (el *Element) WaitStableRAF() error {
 	defer el.tryTrace(TraceTypeWait, "stable RAF")()
 
 	var shape *proto.DOMGetContentQuadsResult
+	page := el.page.Context(el.ctx)
 
 	for {
-		err = el.page.WaitRepaint()
+		err = page.WaitRepaint()
 		if err != nil {
 			return err
 		}
@@ -624,7 +626,7 @@ func (el *Element) Resource() ([]byte, error) {
 		return nil, err
 	}
 
-	return el.page.GetResource(src.Value.String())
+	return el.page.Context(el.ctx).GetResource(src.Value.String())
 }
 
 // BackgroundImage returns the css background-image of the element
@@ -636,7 +638,7 @@ func (el *Element) BackgroundImage() ([]byte, error) {
 
 	u := res.Value.Str()
 
-	return el.page.GetResource(u)
+	return el.page.Context(el.ctx).GetResource(u)
 }
 
 // Screenshot of the area of the element
@@ -651,7 +653,7 @@ func (el *Element) Screenshot(format proto.PageCaptureScreenshotFormat, quality 
 		Format:  format,
 	}
 
-	bin, err := el.page.Screenshot(false, opts)
+	bin, err := el.page.Context(el.ctx).Screenshot(false, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -710,4 +712,13 @@ func (el *Element) Equal(elm *Element) (bool, error) {
 
 func (el *Element) id() proto.RuntimeRemoteObjectID {
 	return el.Object.ObjectID
+}
+
+// GetXPath returns the xpath of the element
+func (el *Element) GetXPath(optimized bool) (string, error) {
+	str, err := el.Evaluate(evalHelper(js.GetXPath, optimized))
+	if err != nil {
+		return "", err
+	}
+	return str.Value.String(), nil
 }

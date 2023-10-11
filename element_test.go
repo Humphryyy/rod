@@ -237,6 +237,16 @@ func TestElementContext(t *testing.T) {
 	el.Sleeper(rod.DefaultSleeper).MustClick()
 }
 
+func TestElementCancelContext(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/click.html"))
+	el := p.Timeout(time.Second).MustElement("button")
+	el = el.CancelTimeout()
+	utils.Sleep(1.1)
+	el.MustClick()
+}
+
 func TestIframes(t *testing.T) {
 	g := setup(t)
 
@@ -284,6 +294,11 @@ func TestShadowDOM(t *testing.T) {
 		g.mc.stubErr(1, proto.DOMResolveNode{})
 		el.MustShadowRoot()
 	})
+
+	elNoShadow := p.MustElement("script")
+	_, err := elNoShadow.ShadowRoot()
+	g.True((&rod.ErrNoShadowRoot{}).Is(err))
+	g.Has(err.Error(), "element has no shadow root:")
 }
 
 func TestInputTime(t *testing.T) {
@@ -482,6 +497,21 @@ func TestProperty(t *testing.T) {
 	g.Panic(func() {
 		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
 		el.MustProperty("")
+	})
+}
+
+func TestDisabled(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
+
+	g.False(p.MustElement("#EnabledButton").MustDisabled())
+	g.True(p.MustElement("#DisabledButton").MustDisabled())
+
+	g.Panic(func() {
+		el := p.MustElement("#EnabledButton")
+		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
+		el.MustDisabled()
 	})
 }
 
@@ -689,11 +719,11 @@ func TestUseReleasedElement(t *testing.T) {
 	p := g.page.MustNavigate(g.srcFile("fixtures/click.html"))
 	btn := p.MustElement("button")
 	btn.MustRelease()
-	g.Err(btn.Click("left"))
+	g.Err(btn.Click("left", 1))
 
 	btn = p.MustElement("button")
 	g.E(proto.RuntimeReleaseObject{ObjectID: btn.Object.ObjectID}.Call(p))
-	g.Is(btn.Click("left"), cdp.ErrObjNotFound)
+	g.Is(btn.Click("left", 1), cdp.ErrObjNotFound)
 }
 
 func TestElementRemove(t *testing.T) {
@@ -798,6 +828,16 @@ func TestElementWait(t *testing.T) {
 	g.Eq(e1.MustText(), "xxxxxxxx")
 }
 
+func TestShapeInIframe(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/click-iframe.html"))
+	pt := p.MustElement("iframe").MustFrame().MustElement("button").MustShape().OnePointInside()
+
+	g.InDelta(pt.X, 238, 1)
+	g.InDelta(pt.Y, 287, 1)
+}
+
 func TestElementFromPointErr(t *testing.T) {
 	g := setup(t)
 
@@ -864,4 +904,21 @@ func TestElementErrors(t *testing.T) {
 
 	err = el.Context(ctx).Release()
 	g.Err(err)
+}
+
+func TestElementGetXPath(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
+	el := p.MustElement("textarea")
+	xpath := el.MustGetXPath(true)
+	g.Eq(xpath, "/html/body/form/textarea")
+
+	xpath = el.MustGetXPath(false)
+	g.Eq(xpath, "/html/body/form/textarea")
+
+	g.Panic(func() {
+		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
+		el.MustGetXPath(true)
+	})
 }

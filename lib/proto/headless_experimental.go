@@ -19,6 +19,9 @@ const (
 
 	// HeadlessExperimentalScreenshotParamsFormatPng enum const
 	HeadlessExperimentalScreenshotParamsFormatPng HeadlessExperimentalScreenshotParamsFormat = "png"
+
+	// HeadlessExperimentalScreenshotParamsFormatWebp enum const
+	HeadlessExperimentalScreenshotParamsFormatWebp HeadlessExperimentalScreenshotParamsFormat = "webp"
 )
 
 // HeadlessExperimentalScreenshotParams Encoding options for a screenshot.
@@ -29,6 +32,9 @@ type HeadlessExperimentalScreenshotParams struct {
 
 	// Quality (optional) Compression quality from range [0..100] (jpeg only).
 	Quality *int `json:"quality,omitempty"`
+
+	// OptimizeForSpeed (optional) Optimize image encoding for speed, not for resulting size (defaults to false)
+	OptimizeForSpeed bool `json:"optimizeForSpeed,omitempty"`
 }
 
 // HeadlessExperimentalBeginFrame Sends a BeginFrame to the target and returns when the frame was completed. Optionally captures a
@@ -76,7 +82,7 @@ type HeadlessExperimentalBeginFrameResult struct {
 	ScreenshotData []byte `json:"screenshotData,omitempty"`
 }
 
-// HeadlessExperimentalDisable Disables headless events for the target.
+// HeadlessExperimentalDisable (deprecated) Disables headless events for the target.
 type HeadlessExperimentalDisable struct {
 }
 
@@ -88,7 +94,7 @@ func (m HeadlessExperimentalDisable) Call(c Client) error {
 	return call(m.ProtoReq(), m, nil, c)
 }
 
-// HeadlessExperimentalEnable Enables headless events for the target.
+// HeadlessExperimentalEnable (deprecated) Enables headless events for the target.
 type HeadlessExperimentalEnable struct {
 }
 
@@ -98,18 +104,4 @@ func (m HeadlessExperimentalEnable) ProtoReq() string { return "HeadlessExperime
 // Call sends the request
 func (m HeadlessExperimentalEnable) Call(c Client) error {
 	return call(m.ProtoReq(), m, nil, c)
-}
-
-// HeadlessExperimentalNeedsBeginFramesChanged (deprecated) Issued when the target starts or stops needing BeginFrames.
-// Deprecated. Issue beginFrame unconditionally instead and use result from
-// beginFrame to detect whether the frames were suppressed.
-type HeadlessExperimentalNeedsBeginFramesChanged struct {
-
-	// NeedsBeginFrames True if BeginFrames are needed, false otherwise.
-	NeedsBeginFrames bool `json:"needsBeginFrames"`
-}
-
-// ProtoEvent name
-func (evt HeadlessExperimentalNeedsBeginFramesChanged) ProtoEvent() string {
-	return "HeadlessExperimental.needsBeginFramesChanged"
 }

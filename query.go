@@ -293,7 +293,7 @@ func (p *Page) Search(query string) (*SearchResult, error) {
 		// It's unnecessary to ask the user to explicitly call it.
 		//
 		// When the id is zero, it means the proto.DOMDocumentUpdated has fired which will
-		// invlidate all the existing NodeID. We have to call proto.DOMGetDocument
+		// invalidate all the existing NodeID. We have to call proto.DOMGetDocument
 		// to reset the remote browser's tracker.
 		if id == 0 {
 			_, _ = proto.DOMGetDocument{}.Call(p)
@@ -378,14 +378,6 @@ func (p *Page) Race() *RaceContext {
 	return &RaceContext{page: p}
 }
 
-// Element the doc is similar to MustElement
-func (rc *RaceContext) Element(selector string) *RaceContext {
-	rc.branches = append(rc.branches, &raceBranch{
-		condition: func(p *Page) (*Element, error) { return p.Element(selector) },
-	})
-	return rc
-}
-
 // ElementFunc takes a custom function to determine race success
 func (rc *RaceContext) ElementFunc(fn func(*Page) (*Element, error)) *RaceContext {
 	rc.branches = append(rc.branches, &raceBranch{
@@ -394,28 +386,44 @@ func (rc *RaceContext) ElementFunc(fn func(*Page) (*Element, error)) *RaceContex
 	return rc
 }
 
+// Element the doc is similar to MustElement
+func (rc *RaceContext) Element(selector string) *RaceContext {
+	return rc.ElementFunc(func(p *Page) (*Element, error) {
+		return p.Element(selector)
+	})
+}
+
 // ElementX the doc is similar to ElementX
 func (rc *RaceContext) ElementX(selector string) *RaceContext {
-	rc.branches = append(rc.branches, &raceBranch{
-		condition: func(p *Page) (*Element, error) { return p.ElementX(selector) },
+	return rc.ElementFunc(func(p *Page) (*Element, error) {
+		return p.ElementX(selector)
 	})
-	return rc
 }
 
 // ElementR the doc is similar to ElementR
 func (rc *RaceContext) ElementR(selector, regex string) *RaceContext {
-	rc.branches = append(rc.branches, &raceBranch{
-		condition: func(p *Page) (*Element, error) { return p.ElementR(selector, regex) },
+	return rc.ElementFunc(func(p *Page) (*Element, error) {
+		return p.ElementR(selector, regex)
 	})
-	return rc
 }
 
 // ElementByJS the doc is similar to MustElementByJS
 func (rc *RaceContext) ElementByJS(opts *EvalOptions) *RaceContext {
-	rc.branches = append(rc.branches, &raceBranch{
-		condition: func(p *Page) (*Element, error) { return p.ElementByJS(opts) },
+	return rc.ElementFunc(func(p *Page) (*Element, error) {
+		return p.ElementByJS(opts)
 	})
-	return rc
+}
+
+// Search the doc is similar to MustSearch
+func (rc *RaceContext) Search(query string) *RaceContext {
+	return rc.ElementFunc(func(p *Page) (*Element, error) {
+		res, err := p.Search(query)
+		if err != nil {
+			return nil, err
+		}
+		res.Release()
+		return res.First, nil
+	})
 }
 
 // Handle adds a callback function to the most recent chained selector.
@@ -492,7 +500,7 @@ func (el *Element) ElementX(xPath string) (*Element, error) {
 
 // ElementByJS returns the element from the return value of the js
 func (el *Element) ElementByJS(opts *EvalOptions) (*Element, error) {
-	e, err := el.page.Sleeper(NotFoundSleeper).ElementByJS(opts.This(el.Object))
+	e, err := el.page.Context(el.ctx).Sleeper(NotFoundSleeper).ElementByJS(opts.This(el.Object))
 	if err != nil {
 		return nil, err
 	}

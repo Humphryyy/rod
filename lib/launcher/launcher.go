@@ -3,6 +3,7 @@ package launcher
 
 import (
 	"context"
+	"crypto"
 	"errors"
 	"fmt"
 	"io"
@@ -76,7 +77,6 @@ func New() *Launcher {
 		"disable-client-side-phishing-detection":             nil,
 		"disable-component-extensions-with-background-pages": nil,
 		"disable-default-apps":                               nil,
-		"disable-dev-shm-usage":                              nil,
 		"disable-hang-monitor":                               nil,
 		"disable-ipc-flooding-protection":                    nil,
 		"disable-popup-blocking":                             nil,
@@ -157,12 +157,12 @@ func (l *Launcher) Context(ctx context.Context) *Launcher {
 	return l
 }
 
-// Set a command line argument to launch the browser.
+// Set a command line argument when launching the browser. Be careful the first argument is a flag name,
+// it shouldn't contain values. The values the will be joined with comma.
+// You can use the [Launcher.FormatArgs] to debug the final CLI arguments.
 func (l *Launcher) Set(name flags.Flag, values ...string) *Launcher {
-	if strings.Contains(string(name), "=") {
-		panic("flag name should not contain '='")
-	}
-	l.Flags[l.normalizeFlag(name)] = values
+	name.Check()
+	l.Flags[name.NormalizeFlag()] = values
 	return l
 }
 
@@ -182,7 +182,7 @@ func (l *Launcher) Has(name flags.Flag) bool {
 
 // GetFlags from settings
 func (l *Launcher) GetFlags(name flags.Flag) ([]string, bool) {
-	flag, has := l.Flags[l.normalizeFlag(name)]
+	flag, has := l.Flags[name.NormalizeFlag()]
 	return flag, has
 }
 
@@ -197,7 +197,7 @@ func (l *Launcher) Append(name flags.Flag, values ...string) *Launcher {
 
 // Delete a flag
 func (l *Launcher) Delete(name flags.Flag) *Launcher {
-	delete(l.Flags, l.normalizeFlag(name))
+	delete(l.Flags, name.NormalizeFlag())
 	return l
 }
 
@@ -253,6 +253,23 @@ func (l *Launcher) Devtools(autoOpenForTabs bool) *Launcher {
 	return l.Delete("auto-open-devtools-for-tabs")
 }
 
+// IgnoreCerts configure the Chrome's ignore-certificate-errors-spki-list argument with the public keys.
+func (l *Launcher) IgnoreCerts(pks []crypto.PublicKey) error {
+	spkis := make([]string, 0, len(pks))
+
+	for _, pk := range pks {
+		spki, err := certSPKI(pk)
+		if err != nil {
+			return fmt.Errorf("certSPKI: %w", err)
+		}
+		spkis = append(spkis, string(spki))
+	}
+
+	l.Set("ignore-certificate-errors-spki-list", spkis...)
+
+	return nil
+}
+
 // UserDataDir is where the browser will look for all of its state, such as cookie and cache.
 // When set to empty, browser will use current OS home dir.
 // Related doc: https://chromium.googlesource.com/chromium/src/+/master/docs/user_data_dir.md
@@ -284,8 +301,9 @@ func (l *Launcher) RemoteDebuggingPort(port int) *Launcher {
 	return l.Set(flags.RemoteDebuggingPort, fmt.Sprintf("%d", port))
 }
 
-// Proxy switch. When disabled leakless will be disabled.
+// Proxy for the browser
 func (l *Launcher) Proxy(host string) *Launcher {
+	_ = l.browser.Proxy(host)
 	return l.Set(flags.ProxyServer, host)
 }
 
@@ -296,7 +314,8 @@ func (l *Launcher) WorkingDir(path string) *Launcher {
 
 // Env to launch the browser process. The default value is os.Environ().
 // Usually you use it to set the timezone env. Such as:
-//     Env(append(os.Environ(), "TZ=Asia/Tokyo")...)
+//
+//	Env(append(os.Environ(), "TZ=Asia/Tokyo")...)
 func (l *Launcher) Env(env ...string) *Launcher {
 	return l.Set(flags.Env, env...)
 }
@@ -306,7 +325,7 @@ func (l *Launcher) StartURL(u string) *Launcher {
 	return l.Set("", u)
 }
 
-// FormatArgs returns the formated arg list for cli
+// FormatArgs returns the formatted arg list for cli
 func (l *Launcher) FormatArgs() []string {
 	execArgs := []string{}
 	for k, v := range l.Flags {
@@ -467,8 +486,4 @@ func (l *Launcher) Cleanup() {
 
 	dir := l.Get(flags.UserDataDir)
 	_ = os.RemoveAll(dir)
-}
-
-func (l *Launcher) normalizeFlag(name flags.Flag) flags.Flag {
-	return flags.Flag(strings.TrimLeft(string(name), "-"))
 }

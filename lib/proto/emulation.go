@@ -105,10 +105,10 @@ type EmulationUserAgentBrandVersion struct {
 // Missing optional values will be filled in by the target with what it would normally use.
 type EmulationUserAgentMetadata struct {
 
-	// Brands (optional) ...
+	// Brands (optional) Brands appearing in Sec-CH-UA.
 	Brands []*EmulationUserAgentBrandVersion `json:"brands,omitempty"`
 
-	// FullVersionList (optional) ...
+	// FullVersionList (optional) Brands appearing in Sec-CH-UA-Full-Version-List.
 	FullVersionList []*EmulationUserAgentBrandVersion `json:"fullVersionList,omitempty"`
 
 	// FullVersion (deprecated) (optional) ...
@@ -142,9 +142,6 @@ type EmulationDisabledImageType string
 const (
 	// EmulationDisabledImageTypeAvif enum const
 	EmulationDisabledImageTypeAvif EmulationDisabledImageType = "avif"
-
-	// EmulationDisabledImageTypeJxl enum const
-	EmulationDisabledImageTypeJxl EmulationDisabledImageType = "jxl"
 
 	// EmulationDisabledImageTypeWebp enum const
 	EmulationDisabledImageTypeWebp EmulationDisabledImageType = "webp"
@@ -425,11 +422,14 @@ const (
 	// EmulationSetEmulatedVisionDeficiencyTypeNone enum const
 	EmulationSetEmulatedVisionDeficiencyTypeNone EmulationSetEmulatedVisionDeficiencyType = "none"
 
-	// EmulationSetEmulatedVisionDeficiencyTypeAchromatopsia enum const
-	EmulationSetEmulatedVisionDeficiencyTypeAchromatopsia EmulationSetEmulatedVisionDeficiencyType = "achromatopsia"
-
 	// EmulationSetEmulatedVisionDeficiencyTypeBlurredVision enum const
 	EmulationSetEmulatedVisionDeficiencyTypeBlurredVision EmulationSetEmulatedVisionDeficiencyType = "blurredVision"
+
+	// EmulationSetEmulatedVisionDeficiencyTypeReducedContrast enum const
+	EmulationSetEmulatedVisionDeficiencyTypeReducedContrast EmulationSetEmulatedVisionDeficiencyType = "reducedContrast"
+
+	// EmulationSetEmulatedVisionDeficiencyTypeAchromatopsia enum const
+	EmulationSetEmulatedVisionDeficiencyTypeAchromatopsia EmulationSetEmulatedVisionDeficiencyType = "achromatopsia"
 
 	// EmulationSetEmulatedVisionDeficiencyTypeDeuteranopia enum const
 	EmulationSetEmulatedVisionDeficiencyTypeDeuteranopia EmulationSetEmulatedVisionDeficiencyType = "deuteranopia"
@@ -444,7 +444,8 @@ const (
 // EmulationSetEmulatedVisionDeficiency (experimental) Emulates the given vision deficiency.
 type EmulationSetEmulatedVisionDeficiency struct {
 
-	// Type Vision deficiency to emulate.
+	// Type Vision deficiency to emulate. Order: best-effort emulations come first, followed by any
+	// physiologically accurate emulations for medically recognized color vision deficiencies.
 	Type EmulationSetEmulatedVisionDeficiencyType `json:"type"`
 }
 

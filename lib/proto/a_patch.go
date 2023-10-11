@@ -8,7 +8,9 @@ import (
 
 // TimeSinceEpoch UTC time in seconds, counted from January 1, 1970.
 // To convert a time.Time to TimeSinceEpoch, for example:
-//     proto.TimeSinceEpoch(time.Now().Unix())
+//
+//	proto.TimeSinceEpoch(time.Now().Unix())
+//
 // For session cookie, the value should be -1.
 type TimeSinceEpoch float64
 
@@ -41,6 +43,26 @@ func (t MonotonicTime) String() string {
 type Point struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
+}
+
+// NewPoint instance
+func NewPoint(x, y float64) Point {
+	return Point{x, y}
+}
+
+// Add v to p and returns a new Point
+func (p Point) Add(v Point) Point {
+	return NewPoint(p.X+v.X, p.Y+v.Y)
+}
+
+// Minus v from p and returns a new Point
+func (p Point) Minus(v Point) Point {
+	return NewPoint(p.X-v.X, p.Y-v.Y)
+}
+
+// Scale p with s and returns a new Point
+func (p Point) Scale(s float64) Point {
+	return NewPoint(p.X*s, p.Y*s)
 }
 
 // Len is the number of vertices

@@ -24,7 +24,9 @@ func (b *Browser) HijackRequests() *HijackRouter {
 // When use Fetch domain outside the router should be stopped. Enabling hijacking disables page caching,
 // but such as 304 Not Modified will still work as expected.
 // The entire process of hijacking one request:
-//    browser --req-> rod ---> server ---> rod --res-> browser
+//
+//	browser --req-> rod ---> server ---> rod --res-> browser
+//
 // The --req-> and --res-> are the parts that can be modified.
 func (p *Page) HijackRequests() *HijackRouter {
 	return newHijackRouter(p.browser, p).initEvents()
@@ -231,13 +233,11 @@ func (h *Hijack) LoadResponse(client *http.Client, loadBody bool) error {
 
 	h.Response.payload.ResponseCode = res.StatusCode
 
-	list := []string{}
 	for k, vs := range res.Header {
 		for _, v := range vs {
-			list = append(list, k, v)
+			h.Response.SetHeader(k, v)
 		}
 	}
-	h.Response.SetHeader(list...)
 
 	if loadBody {
 		b, err := ioutil.ReadAll(res.Body)
@@ -292,12 +292,12 @@ func (ctx *HijackRequest) JSONBody() gson.JSON {
 	return gson.NewFrom(ctx.Body())
 }
 
-// Req returns the underlaying http.Request instance that will be used to send the request.
+// Req returns the underlying http.Request instance that will be used to send the request.
 func (ctx *HijackRequest) Req() *http.Request {
 	return ctx.req
 }
 
-// SetContext of the underlaying http.Request instance
+// SetContext of the underlying http.Request instance
 func (ctx *HijackRequest) SetContext(c context.Context) *HijackRequest {
 	ctx.req = ctx.req.WithContext(c)
 	return ctx

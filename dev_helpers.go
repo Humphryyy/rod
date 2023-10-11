@@ -94,7 +94,7 @@ func (b *Browser) ServeMonitor(host string) string {
 }
 
 // check method and sleep if needed
-func (b *Browser) trySlowmotion() {
+func (b *Browser) trySlowMotion() {
 	if b.slowMotion == 0 {
 		return
 	}
@@ -177,7 +177,7 @@ func (p *Page) tryTraceReq(includes, excludes []string) func(map[proto.NetworkRe
 	}
 
 	go func() {
-		var waitlist map[string]string
+		var waitList map[string]string
 		t := time.NewTicker(time.Second)
 		for {
 			select {
@@ -185,9 +185,9 @@ func (p *Page) tryTraceReq(includes, excludes []string) func(map[proto.NetworkRe
 				t.Stop()
 				cleanup()
 				return
-			case waitlist = <-ch:
+			case waitList = <-ch:
 			case <-t.C:
-				p.browser.logger.Println(TraceTypeWaitRequests, p, waitlist)
+				p.browser.logger.Println(TraceTypeWaitRequests, p, waitList)
 			}
 		}
 	}()
@@ -229,7 +229,7 @@ func (m *Mouse) initMouseTracer() {
 }
 
 func (m *Mouse) updateMouseTracer() bool {
-	res, err := m.page.Evaluate(evalHelper(js.UpdateMouseTracer, m.id, m.x, m.y))
+	res, err := m.page.Evaluate(evalHelper(js.UpdateMouseTracer, m.id, m.pos.X, m.pos.Y))
 	if err != nil {
 		return true
 	}

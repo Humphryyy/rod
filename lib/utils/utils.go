@@ -1,3 +1,4 @@
+// Package utils ...
 package utils
 
 import (
@@ -25,6 +26,11 @@ import (
 
 	"github.com/ysmood/gson"
 )
+
+// TestEnvs for testing
+var TestEnvs = map[string]string{
+	"GODEBUG": "tracebackancestors=100",
+}
 
 // InContainer will be true if is inside container environment, such as docker
 var InContainer = FileExists("/.dockerenv") || FileExists("/.containerenv")
@@ -101,6 +107,17 @@ func RandString(len int) string {
 // Mkdir makes dir recursively
 func Mkdir(path string) error {
 	return os.MkdirAll(path, 0775)
+}
+
+// AbsolutePaths returns absolute paths of files in current working directory
+func AbsolutePaths(paths []string) []string {
+	absPaths := []string{}
+	for _, p := range paths {
+		absPath, err := filepath.Abs(p)
+		E(err)
+		absPaths = append(absPaths, absPath)
+	}
+	return absPaths
 }
 
 // OutputFile auto creates file if not exists, it will try to detect the data type and
@@ -262,7 +279,7 @@ func Exec(line string, rest ...string) string {
 	return ExecLine(true, line, rest...)
 }
 
-var execLogger = log.New(os.Stdout, "[exec]", log.LstdFlags)
+var execLogger = log.New(os.Stdout, "[exec] ", 0)
 
 // ExecLine of command
 func ExecLine(std bool, line string, rest ...string) string {
@@ -286,6 +303,9 @@ func ExecLine(std bool, line string, rest ...string) string {
 	}
 
 	if err := cmd.Run(); err != nil {
+		if std {
+			panic(err)
+		}
 		panic(fmt.Sprintf("%v\n%v", err, buf.String()))
 	}
 

@@ -4,6 +4,7 @@
 //go:generate go run ./lib/assets/generate
 //go:generate go run ./lib/utils/lint
 
+// Package rod is a high-level driver directly based on DevTools Protocol.
 package rod
 
 import (
@@ -59,7 +60,7 @@ type Browser struct {
 }
 
 // New creates a controller.
-// DefaultDevice to emulate is set to devices.LaptopWithMDPIScreen.Landescape(), it can make the actual view area
+// DefaultDevice to emulate is set to devices.LaptopWithMDPIScreen.Landscape(), it can make the actual view area
 // smaller than the browser window on headful mode, you can use NoDefaultDevice to disable it.
 func New() *Browser {
 	return (&Browser{
@@ -70,7 +71,7 @@ func New() *Browser {
 		trace:         defaults.Trace,
 		monitor:       defaults.Monitor,
 		logger:        DefaultLogger,
-		defaultDevice: devices.LaptopWithMDPIScreen.Landescape(),
+		defaultDevice: devices.LaptopWithMDPIScreen.Landscape(),
 		targetsLock:   &sync.Mutex{},
 		states:        &sync.Map{},
 	}).WithPanic(utils.Panic)
@@ -156,6 +157,8 @@ func (b *Browser) Connect() error {
 			return err
 		}
 		b.client = c
+	} else if b.controlURL != "" {
+		panic("Browser.Client and Browser.ControlURL can't be set at the same time")
 	}
 
 	b.initEvents()
@@ -482,7 +485,8 @@ func (b *Browser) SetCookies(cookies []*proto.NetworkCookieParam) error {
 
 // WaitDownload returns a helper to get the next download file.
 // The file path will be:
-//     filepath.Join(dir, info.GUID)
+//
+//	filepath.Join(dir, info.GUID)
 func (b *Browser) WaitDownload(dir string) func() (info *proto.PageDownloadWillBegin) {
 	var oldDownloadBehavior proto.BrowserSetDownloadBehavior
 	has := b.LoadState("", &oldDownloadBehavior)

@@ -341,6 +341,9 @@ type AccessibilityAXNode struct {
 	// Role (optional) This `Node`'s role, whether explicit or implicit.
 	Role *AccessibilityAXValue `json:"role,omitempty"`
 
+	// ChromeRole (optional) This `Node`'s Chrome raw role.
+	ChromeRole *AccessibilityAXValue `json:"chromeRole,omitempty"`
+
 	// Name (optional) The accessible name for this `Node`.
 	Name *AccessibilityAXValue `json:"name,omitempty"`
 
@@ -403,7 +406,7 @@ type AccessibilityGetPartialAXTree struct {
 	// ObjectID (optional) JavaScript object id of the node wrapper to get the partial accessibility tree for.
 	ObjectID RuntimeRemoteObjectID `json:"objectId,omitempty"`
 
-	// FetchRelatives (optional) Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
+	// FetchRelatives (optional) Whether to fetch this node's ancestors, siblings and children. Defaults to true.
 	FetchRelatives bool `json:"fetchRelatives,omitempty"`
 }
 
@@ -432,7 +435,7 @@ type AccessibilityGetFullAXTree struct {
 	Depth *int `json:"depth,omitempty"`
 
 	// FrameID (optional) The frame for whose document the AX tree should be retrieved.
-	// If omitted, the root frame is used.
+	// If omited, the root frame is used.
 	FrameID PageFrameID `json:"frameId,omitempty"`
 }
 

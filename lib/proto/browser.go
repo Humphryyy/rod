@@ -86,6 +86,12 @@ const (
 	// BrowserPermissionTypeGeolocation enum const
 	BrowserPermissionTypeGeolocation BrowserPermissionType = "geolocation"
 
+	// BrowserPermissionTypeIdleDetection enum const
+	BrowserPermissionTypeIdleDetection BrowserPermissionType = "idleDetection"
+
+	// BrowserPermissionTypeLocalFonts enum const
+	BrowserPermissionTypeLocalFonts BrowserPermissionType = "localFonts"
+
 	// BrowserPermissionTypeMidi enum const
 	BrowserPermissionTypeMidi BrowserPermissionType = "midi"
 
@@ -110,20 +116,26 @@ const (
 	// BrowserPermissionTypeSensors enum const
 	BrowserPermissionTypeSensors BrowserPermissionType = "sensors"
 
+	// BrowserPermissionTypeStorageAccess enum const
+	BrowserPermissionTypeStorageAccess BrowserPermissionType = "storageAccess"
+
+	// BrowserPermissionTypeTopLevelStorageAccess enum const
+	BrowserPermissionTypeTopLevelStorageAccess BrowserPermissionType = "topLevelStorageAccess"
+
 	// BrowserPermissionTypeVideoCapture enum const
 	BrowserPermissionTypeVideoCapture BrowserPermissionType = "videoCapture"
 
 	// BrowserPermissionTypeVideoCapturePanTiltZoom enum const
 	BrowserPermissionTypeVideoCapturePanTiltZoom BrowserPermissionType = "videoCapturePanTiltZoom"
 
-	// BrowserPermissionTypeIdleDetection enum const
-	BrowserPermissionTypeIdleDetection BrowserPermissionType = "idleDetection"
-
 	// BrowserPermissionTypeWakeLockScreen enum const
 	BrowserPermissionTypeWakeLockScreen BrowserPermissionType = "wakeLockScreen"
 
 	// BrowserPermissionTypeWakeLockSystem enum const
 	BrowserPermissionTypeWakeLockSystem BrowserPermissionType = "wakeLockSystem"
+
+	// BrowserPermissionTypeWindowManagement enum const
+	BrowserPermissionTypeWindowManagement BrowserPermissionType = "windowManagement"
 )
 
 // BrowserPermissionSetting (experimental) ...
@@ -421,7 +433,7 @@ type BrowserGetHistograms struct {
 	// all histograms.
 	Query string `json:"query,omitempty"`
 
-	// Delta (optional) If true, retrieve delta since last call.
+	// Delta (optional) If true, retrieve delta since last delta call.
 	Delta bool `json:"delta,omitempty"`
 }
 
@@ -447,7 +459,7 @@ type BrowserGetHistogram struct {
 	// Name Requested histogram name.
 	Name string `json:"name"`
 
-	// Delta (optional) If true, retrieve delta since last call.
+	// Delta (optional) If true, retrieve delta since last delta call.
 	Delta bool `json:"delta,omitempty"`
 }
 

@@ -75,7 +75,7 @@ func Example_disable_headless_to_debug() {
 	url := l.MustLaunch()
 
 	// Trace shows verbose debug information for each action executed
-	// Slowmotion is a debug related function that waits 2 seconds between
+	// SlowMotion is a debug related function that waits 2 seconds between
 	// each action, making it easier to inspect what your code is doing.
 	browser := rod.New().
 		ControlURL(url).
@@ -101,7 +101,7 @@ func Example_disable_headless_to_debug() {
 	utils.Pause() // pause goroutine
 }
 
-// Rod use https://golang.org/pkg/context to handle cancelations for IO blocking operations, most times it's timeout.
+// Rod use https://golang.org/pkg/context to handle cancellations for IO blocking operations, most times it's timeout.
 // Context will be recursively passed to all sub-methods.
 // For example, methods like Page.Context(ctx) will return a clone of the page with the ctx,
 // all the methods of the returned page will use the ctx if they have IO blocking operations.
@@ -293,20 +293,20 @@ func Example_wait_for_request() {
 	browser := rod.New().MustConnect()
 	defer browser.MustClose()
 
-	page := browser.MustPage("https://duckduckgo.com/")
+	page := browser.MustPage("https://www.wikipedia.org/").MustWaitLoad()
 
 	// Start to analyze request events
 	wait := page.MustWaitRequestIdle()
 
 	// This will trigger the search ajax request
-	page.MustElement("#search_form_input_homepage").MustClick().MustInput("lisp")
+	page.MustElement("#searchInput").MustClick().MustInput("lisp")
 
 	// Wait until there's no active requests
 	wait()
 
 	// We want to make sure that after waiting, there are some autocomplete
 	// suggestions available.
-	fmt.Println(len(page.MustElements(".search__autocomplete .acp")) > 0)
+	fmt.Println(len(page.MustElements(".suggestion-link")) > 0)
 
 	// Output: true
 }
@@ -457,7 +457,9 @@ func Example_download_file() {
 // Shows how to intercept requests and modify
 // both the request and the response.
 // The entire process of hijacking one request:
-//    browser --req-> rod ---> server ---> rod --res-> browser
+//
+//	browser --req-> rod ---> server ---> rod --res-> browser
+//
 // The --req-> and --res-> are the parts that can be modified.
 func Example_hijack_requests() {
 	browser := rod.New().MustConnect()

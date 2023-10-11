@@ -46,6 +46,9 @@ const (
 	// NetworkResourceTypeFetch enum const
 	NetworkResourceTypeFetch NetworkResourceType = "Fetch"
 
+	// NetworkResourceTypePrefetch enum const
+	NetworkResourceTypePrefetch NetworkResourceType = "Prefetch"
+
 	// NetworkResourceTypeEventSource enum const
 	NetworkResourceTypeEventSource NetworkResourceType = "EventSource"
 
@@ -438,6 +441,14 @@ type NetworkSecurityDetails struct {
 
 	// CertificateTransparencyCompliance Whether the request complied with Certificate Transparency policy
 	CertificateTransparencyCompliance NetworkCertificateTransparencyCompliance `json:"certificateTransparencyCompliance"`
+
+	// ServerSignatureAlgorithm (optional) The signature algorithm used by the server in the TLS server signature,
+	// represented as a TLS SignatureScheme code point. Omitted if not
+	// applicable or not known.
+	ServerSignatureAlgorithm *int `json:"serverSignatureAlgorithm,omitempty"`
+
+	// EncryptedClientHello Whether the connection used Encrypted ClientHello
+	EncryptedClientHello bool `json:"encryptedClientHello"`
 }
 
 // NetworkCertificateTransparencyCompliance Whether the request complied with Certificate Transparency policy.
@@ -633,10 +644,10 @@ const (
 // are specified in third_party/blink/renderer/core/fetch/trust_token.idl.
 type NetworkTrustTokenParams struct {
 
-	// Type ...
-	Type NetworkTrustTokenOperationType `json:"type"`
+	// Operation ...
+	Operation NetworkTrustTokenOperationType `json:"operation"`
 
-	// RefreshPolicy Only set for "token-redemption" type and determine whether
+	// RefreshPolicy Only set for "token-redemption" operation and determine whether
 	// to request a fresh SRR or use a still valid cached SRR.
 	RefreshPolicy NetworkTrustTokenParamsRefreshPolicy `json:"refreshPolicy"`
 
@@ -657,6 +668,35 @@ const (
 
 	// NetworkTrustTokenOperationTypeSigning enum const
 	NetworkTrustTokenOperationTypeSigning NetworkTrustTokenOperationType = "Signing"
+)
+
+// NetworkAlternateProtocolUsage (experimental) The reason why Chrome uses a specific transport protocol for HTTP semantics.
+type NetworkAlternateProtocolUsage string
+
+const (
+	// NetworkAlternateProtocolUsageAlternativeJobWonWithoutRace enum const
+	NetworkAlternateProtocolUsageAlternativeJobWonWithoutRace NetworkAlternateProtocolUsage = "alternativeJobWonWithoutRace"
+
+	// NetworkAlternateProtocolUsageAlternativeJobWonRace enum const
+	NetworkAlternateProtocolUsageAlternativeJobWonRace NetworkAlternateProtocolUsage = "alternativeJobWonRace"
+
+	// NetworkAlternateProtocolUsageMainJobWonRace enum const
+	NetworkAlternateProtocolUsageMainJobWonRace NetworkAlternateProtocolUsage = "mainJobWonRace"
+
+	// NetworkAlternateProtocolUsageMappingMissing enum const
+	NetworkAlternateProtocolUsageMappingMissing NetworkAlternateProtocolUsage = "mappingMissing"
+
+	// NetworkAlternateProtocolUsageBroken enum const
+	NetworkAlternateProtocolUsageBroken NetworkAlternateProtocolUsage = "broken"
+
+	// NetworkAlternateProtocolUsageDNSAlpnH3JobWonWithoutRace enum const
+	NetworkAlternateProtocolUsageDNSAlpnH3JobWonWithoutRace NetworkAlternateProtocolUsage = "dnsAlpnH3JobWonWithoutRace"
+
+	// NetworkAlternateProtocolUsageDNSAlpnH3JobWonRace enum const
+	NetworkAlternateProtocolUsageDNSAlpnH3JobWonRace NetworkAlternateProtocolUsage = "dnsAlpnH3JobWonRace"
+
+	// NetworkAlternateProtocolUsageUnspecifiedReason enum const
+	NetworkAlternateProtocolUsageUnspecifiedReason NetworkAlternateProtocolUsage = "unspecifiedReason"
 )
 
 // NetworkResponse HTTP response data.
@@ -724,6 +764,9 @@ type NetworkResponse struct {
 
 	// Protocol (optional) Protocol used to fetch this request.
 	Protocol string `json:"protocol,omitempty"`
+
+	// AlternateProtocolUsage (experimental) (optional) The reason why Chrome uses a specific transport protocol for HTTP semantics.
+	AlternateProtocolUsage NetworkAlternateProtocolUsage `json:"alternateProtocolUsage,omitempty"`
 
 	// SecurityState Security state of the request resource.
 	SecurityState SecuritySecurityState `json:"securityState"`
@@ -916,6 +959,9 @@ const (
 	// NetworkSetCookieBlockedReasonUserPreferences enum const
 	NetworkSetCookieBlockedReasonUserPreferences NetworkSetCookieBlockedReason = "UserPreferences"
 
+	// NetworkSetCookieBlockedReasonThirdPartyBlockedInFirstPartySet enum const
+	NetworkSetCookieBlockedReasonThirdPartyBlockedInFirstPartySet NetworkSetCookieBlockedReason = "ThirdPartyBlockedInFirstPartySet"
+
 	// NetworkSetCookieBlockedReasonSyntaxError enum const
 	NetworkSetCookieBlockedReasonSyntaxError NetworkSetCookieBlockedReason = "SyntaxError"
 
@@ -980,6 +1026,9 @@ const (
 
 	// NetworkCookieBlockedReasonUserPreferences enum const
 	NetworkCookieBlockedReasonUserPreferences NetworkCookieBlockedReason = "UserPreferences"
+
+	// NetworkCookieBlockedReasonThirdPartyBlockedInFirstPartySet enum const
+	NetworkCookieBlockedReasonThirdPartyBlockedInFirstPartySet NetworkCookieBlockedReason = "ThirdPartyBlockedInFirstPartySet"
 
 	// NetworkCookieBlockedReasonUnknownError enum const
 	NetworkCookieBlockedReasonUnknownError NetworkCookieBlockedReason = "UnknownError"
@@ -1759,8 +1808,9 @@ func (m NetworkEnable) Call(c Client) error {
 	return call(m.ProtoReq(), m, nil, c)
 }
 
-// NetworkGetAllCookies Returns all browser cookies. Depending on the backend support, will return detailed cookie
+// NetworkGetAllCookies (deprecated) Returns all browser cookies. Depending on the backend support, will return detailed cookie
 // information in the `cookies` field.
+// Deprecated. Use Storage.getCookies instead.
 type NetworkGetAllCookies struct {
 }
 
@@ -1773,7 +1823,7 @@ func (m NetworkGetAllCookies) Call(c Client) (*NetworkGetAllCookiesResult, error
 	return &res, call(m.ProtoReq(), m, &res, c)
 }
 
-// NetworkGetAllCookiesResult ...
+// NetworkGetAllCookiesResult (deprecated) ...
 type NetworkGetAllCookiesResult struct {
 
 	// Cookies Array of cookie objects.
@@ -2725,6 +2775,9 @@ type NetworkRequestWillBeSentExtraInfo struct {
 
 	// ClientSecurityState (optional) The client security state set for the request.
 	ClientSecurityState *NetworkClientSecurityState `json:"clientSecurityState,omitempty"`
+
+	// SiteHasCookieInOtherPartition (optional) Whether the site has partitioned cookies stored in a partition different than the current one.
+	SiteHasCookieInOtherPartition bool `json:"siteHasCookieInOtherPartition,omitempty"`
 }
 
 // ProtoEvent name
@@ -2760,6 +2813,13 @@ type NetworkResponseReceivedExtraInfo struct {
 	// HeadersText (optional) Raw response header text as it was received over the wire. The raw text may not always be
 	// available, such as in the case of HTTP/2 or QUIC.
 	HeadersText string `json:"headersText,omitempty"`
+
+	// CookiePartitionKey (optional) The cookie partition key that will be used to store partitioned cookies set in this response.
+	// Only sent when partitioned cookies are enabled.
+	CookiePartitionKey string `json:"cookiePartitionKey,omitempty"`
+
+	// CookiePartitionKeyOpaque (optional) True if partitioned cookies are enabled, but the partition key is not serializeable to string.
+	CookiePartitionKeyOpaque bool `json:"cookiePartitionKeyOpaque,omitempty"`
 }
 
 // ProtoEvent name
@@ -2788,6 +2848,9 @@ const (
 
 	// NetworkTrustTokenOperationDoneStatusUnavailable enum const
 	NetworkTrustTokenOperationDoneStatusUnavailable NetworkTrustTokenOperationDoneStatus = "Unavailable"
+
+	// NetworkTrustTokenOperationDoneStatusUnauthorized enum const
+	NetworkTrustTokenOperationDoneStatusUnauthorized NetworkTrustTokenOperationDoneStatus = "Unauthorized"
 
 	// NetworkTrustTokenOperationDoneStatusBadResponse enum const
 	NetworkTrustTokenOperationDoneStatusBadResponse NetworkTrustTokenOperationDoneStatus = "BadResponse"

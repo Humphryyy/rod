@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	mr "math/rand"
-	"reflect"
 	"sync"
 	"time"
 )
@@ -15,7 +14,7 @@ func Sleep(seconds float64) {
 	time.Sleep(d)
 }
 
-// Sleeper sleeps the current gouroutine for sometime, returns the reason to wake, if ctx is done release resource
+// Sleeper sleeps the current goroutine for sometime, returns the reason to wake, if ctx is done release resource
 type Sleeper func(context.Context) error
 
 // ErrMaxSleepCount type
@@ -30,9 +29,7 @@ func (e *ErrMaxSleepCount) Error() string {
 }
 
 // Is interface
-func (e *ErrMaxSleepCount) Is(err error) bool {
-	return reflect.TypeOf(e) == reflect.TypeOf(err)
-}
+func (e *ErrMaxSleepCount) Is(err error) bool { _, ok := err.(*ErrMaxSleepCount); return ok }
 
 // CountSleeper wakes immediately. When counts to the max returns *ErrMaxSleepCount
 func CountSleeper(max int) Sleeper {

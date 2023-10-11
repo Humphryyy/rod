@@ -169,6 +169,9 @@ type CSSCSSRule struct {
 	// SelectorList Rule selector data.
 	SelectorList *CSSSelectorList `json:"selectorList"`
 
+	// NestingSelectors (experimental) (optional) Array of selectors from ancestor style rules, sorted by distance from the current rule.
+	NestingSelectors []string `json:"nestingSelectors,omitempty"`
+
 	// Origin Parent stylesheet's origin.
 	Origin CSSStyleSheetOrigin `json:"origin"`
 
@@ -298,6 +301,10 @@ type CSSCSSProperty struct {
 
 	// Range (optional) The entire property range in the enclosing style declaration (if available).
 	Range *CSSSourceRange `json:"range,omitempty"`
+
+	// LonghandProperties (experimental) (optional) Parsed longhand components of this property if it is a shorthand.
+	// This field will be empty if the given property is not a shorthand.
+	LonghandProperties []*CSSCSSProperty `json:"longhandProperties,omitempty"`
 }
 
 // CSSCSSMediaSource enum
@@ -387,6 +394,12 @@ type CSSCSSContainerQuery struct {
 
 	// Name (optional) Optional name for the container.
 	Name string `json:"name,omitempty"`
+
+	// PhysicalAxes (optional) Optional physical axes queried for the container.
+	PhysicalAxes DOMPhysicalAxes `json:"physicalAxes,omitempty"`
+
+	// LogicalAxes (optional) Optional logical axes queried for the container.
+	LogicalAxes DOMLogicalAxes `json:"logicalAxes,omitempty"`
 }
 
 // CSSCSSSupports (experimental) CSS Supports at-rule descriptor.
@@ -513,6 +526,30 @@ type CSSFontFace struct {
 
 	// FontVariationAxes (optional) Available variation settings (a.k.a. "axes").
 	FontVariationAxes []*CSSFontVariationAxis `json:"fontVariationAxes,omitempty"`
+}
+
+// CSSCSSTryRule CSS try rule representation.
+type CSSCSSTryRule struct {
+
+	// StyleSheetID (optional) The css style sheet identifier (absent for user agent stylesheet and user-specified
+	// stylesheet rules) this rule came from.
+	StyleSheetID CSSStyleSheetID `json:"styleSheetId,omitempty"`
+
+	// Origin Parent stylesheet's origin.
+	Origin CSSStyleSheetOrigin `json:"origin"`
+
+	// Style (optional) Associated style declaration.
+	Style *CSSCSSStyle `json:"style,omitempty"`
+}
+
+// CSSCSSPositionFallbackRule CSS position-fallback rule representation.
+type CSSCSSPositionFallbackRule struct {
+
+	// Name ...
+	Name *CSSValue `json:"name"`
+
+	// TryRules List of keyframes.
+	TryRules []*CSSCSSTryRule `json:"tryRules"`
 }
 
 // CSSCSSKeyframesRule CSS keyframes rule representation.
@@ -798,6 +835,12 @@ type CSSGetMatchedStylesForNodeResult struct {
 
 	// CSSKeyframesRules (optional) A list of CSS keyframed animations matching this node.
 	CSSKeyframesRules []*CSSCSSKeyframesRule `json:"cssKeyframesRules,omitempty"`
+
+	// CSSPositionFallbackRules (optional) A list of CSS position fallbacks matching this node.
+	CSSPositionFallbackRules []*CSSCSSPositionFallbackRule `json:"cssPositionFallbackRules,omitempty"`
+
+	// ParentLayoutNodeID (experimental) (optional) Id of the first parent element that does not have display: contents.
+	ParentLayoutNodeID DOMNodeID `json:"parentLayoutNodeId,omitempty"`
 }
 
 // CSSGetMediaQueries Returns all media queries parsed by the rendering engine.
@@ -929,7 +972,7 @@ func (m CSSTakeComputedStyleUpdates) Call(c Client) (*CSSTakeComputedStyleUpdate
 // CSSTakeComputedStyleUpdatesResult (experimental) ...
 type CSSTakeComputedStyleUpdatesResult struct {
 
-	// NodeIds The list of node Ids that have their tracked computed styles updated
+	// NodeIds The list of node Ids that have their tracked computed styles updated.
 	NodeIds []DOMNodeID `json:"nodeIds"`
 }
 
@@ -1073,6 +1116,35 @@ type CSSSetSupportsTextResult struct {
 	Supports *CSSCSSSupports `json:"supports"`
 }
 
+// CSSSetScopeText (experimental) Modifies the expression of a scope at-rule.
+type CSSSetScopeText struct {
+
+	// StyleSheetID ...
+	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
+
+	// Range ...
+	Range *CSSSourceRange `json:"range"`
+
+	// Text ...
+	Text string `json:"text"`
+}
+
+// ProtoReq name
+func (m CSSSetScopeText) ProtoReq() string { return "CSS.setScopeText" }
+
+// Call the request
+func (m CSSSetScopeText) Call(c Client) (*CSSSetScopeTextResult, error) {
+	var res CSSSetScopeTextResult
+	return &res, call(m.ProtoReq(), m, &res, c)
+}
+
+// CSSSetScopeTextResult (experimental) ...
+type CSSSetScopeTextResult struct {
+
+	// Scope The resulting CSS Scope rule after modification.
+	Scope *CSSCSSScope `json:"scope"`
+}
+
 // CSSSetRuleSelector Modifies the rule selector.
 type CSSSetRuleSelector struct {
 
@@ -1164,7 +1236,7 @@ func (m CSSStartRuleUsageTracking) Call(c Client) error {
 }
 
 // CSSStopRuleUsageTracking Stop tracking rule usage and return the list of rules that were used since last call to
-// `takeCoverageDelta` (or since start of coverage instrumentation)
+// `takeCoverageDelta` (or since start of coverage instrumentation).
 type CSSStopRuleUsageTracking struct {
 }
 
@@ -1185,7 +1257,7 @@ type CSSStopRuleUsageTrackingResult struct {
 }
 
 // CSSTakeCoverageDelta Obtain list of rules that became used since last call to this method (or since start of coverage
-// instrumentation)
+// instrumentation).
 type CSSTakeCoverageDelta struct {
 }
 
@@ -1224,7 +1296,7 @@ func (m CSSSetLocalFontsEnabled) Call(c Client) error {
 }
 
 // CSSFontsUpdated Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
-// web font
+// web font.
 type CSSFontsUpdated struct {
 
 	// Font (optional) The web font that has loaded.

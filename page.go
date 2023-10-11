@@ -5,22 +5,27 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/Humphryyy/rod/lib/cdp"
 	"github.com/Humphryyy/rod/lib/devices"
 	"github.com/Humphryyy/rod/lib/js"
 	"github.com/Humphryyy/rod/lib/proto"
 	"github.com/Humphryyy/rod/lib/utils"
 	"github.com/ysmood/goob"
+	"github.com/ysmood/got/lib/lcs"
 	"github.com/ysmood/gson"
 )
 
 // Page implements these interfaces
-var _ proto.Client = &Page{}
-var _ proto.Contextable = &Page{}
-var _ proto.Sessionable = &Page{}
+var (
+	_ proto.Client      = &Page{}
+	_ proto.Contextable = &Page{}
+	_ proto.Sessionable = &Page{}
+)
 
 // Page represents the webpage.
 // We try to hold as less states as possible.
@@ -149,6 +154,16 @@ func (p *Page) SetUserAgent(req *proto.NetworkSetUserAgentOverride) error {
 		req = devices.LaptopWithMDPIScreen.UserAgentEmulation()
 	}
 	return req.Call(p)
+}
+
+// SetBlockedURLs For some requests that do not want to be triggered, such as some dangerous operations, delete, quit logout, etc.
+// Wildcards ('*') are allowed, such as ["*/api/logout/*","delete"].
+// NOTE: if you set empty pattern "", it will block all requests.
+func (p *Page) SetBlockedURLs(urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
+	return proto.NetworkSetBlockedURLs{Urls: urls}.Call(p)
 }
 
 // Navigate to the url. If the url is empty, "about:blank" will be used.
@@ -296,9 +311,17 @@ func (p *Page) Close() error {
 	defer cancel()
 	messages := p.browser.Context(ctx).Event()
 
-	err := proto.PageClose{}.Call(p)
-	if err != nil {
-		return err
+	for {
+		err := proto.PageClose{}.Call(p)
+		if errors.Is(err, cdp.ErrNotAttachedToActivePage) {
+			// TODO: I don't know why chromium doesn't allow us to close a page while it's navigating.
+			// Looks like a bug in chromium.
+			utils.Sleep(0.1)
+			continue
+		} else if err != nil {
+			return err
+		}
+		break
 	}
 
 	for msg := range messages {
@@ -327,15 +350,33 @@ func (p *Page) Close() error {
 	return nil
 }
 
+// TriggerFavicon supports when browser in headless mode
+// to trigger favicon's request. Pay attention to this
+// function only supported when browser in headless mode,
+// if you call it in no-headless mode, it will raise an error
+// with the message "browser is no-headless".
+func (p *Page) TriggerFavicon() error {
+	// check if browser whether in headless mode
+	// if not in headless mode then raise error
+	if !p.browser.isHeadless() {
+		return errors.New("browser is no-headless")
+	}
+
+	_, err := p.Evaluate(evalHelper(js.TriggerFavicon).ByPromise())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // HandleDialog accepts or dismisses next JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload).
 // Because modal dialog will block js, usually you have to trigger the dialog in another goroutine.
 // For example:
 //
-//     wait, handle := page.MustHandleDialog()
-//     go page.MustElement("button").MustClick()
-//     wait()
-//     handle(true, "")
-//
+//	wait, handle := page.MustHandleDialog()
+//	go page.MustElement("button").MustClick()
+//	wait()
+//	handle(true, "")
 func (p *Page) HandleDialog() (
 	wait func() *proto.PageJavascriptDialogOpening,
 	handle func(*proto.PageHandleJavaScriptDialog) error,
@@ -354,15 +395,45 @@ func (p *Page) HandleDialog() (
 		}
 }
 
+// HandleFileDialog return a functions that waits for the next file chooser dialog pops up and returns the element
+// for the event.
+func (p *Page) HandleFileDialog() (func([]string) error, error) {
+	err := proto.PageSetInterceptFileChooserDialog{Enabled: true}.Call(p)
+	if err != nil {
+		return nil, err
+	}
+
+	var e proto.PageFileChooserOpened
+	w := p.WaitEvent(&e)
+
+	return func(paths []string) error {
+		w()
+
+		err := proto.PageSetInterceptFileChooserDialog{Enabled: false}.Call(p)
+		if err != nil {
+			return err
+		}
+
+		return proto.DOMSetFileInputFiles{
+			Files:         utils.AbsolutePaths(paths),
+			BackendNodeID: e.BackendNodeID,
+		}.Call(p)
+	}, nil
+}
+
 // Screenshot captures the screenshot of current page.
-func (p *Page) Screenshot(fullpage bool, req *proto.PageCaptureScreenshot) ([]byte, error) {
+func (p *Page) Screenshot(fullPage bool, req *proto.PageCaptureScreenshot) ([]byte, error) {
 	if req == nil {
 		req = &proto.PageCaptureScreenshot{}
 	}
-	if fullpage {
+	if fullPage {
 		metrics, err := proto.PageGetLayoutMetrics{}.Call(p)
 		if err != nil {
 			return nil, err
+		}
+
+		if metrics.CSSContentSize == nil {
+			return nil, errors.New("failed to get css content size")
 		}
 
 		oldView := proto.EmulationSetDeviceMetricsOverride{}
@@ -393,6 +464,29 @@ func (p *Page) Screenshot(fullpage bool, req *proto.PageCaptureScreenshot) ([]by
 	return shot.Data, nil
 }
 
+// CaptureDOMSnapshot Returns a document snapshot, including the full DOM tree of the root node
+// (including iframes, template contents, and imported documents) in a flattened array,
+// as well as layout and white-listed computed style information for the nodes.
+// Shadow DOM in the returned DOM tree is flattened.
+// `Documents` The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+// `Strings` Shared string table that all string properties refer to with indexes.
+// Normally use `Strings` is enough.
+func (p *Page) CaptureDOMSnapshot() (domSnapshot *proto.DOMSnapshotCaptureSnapshotResult, err error) {
+	_ = proto.DOMSnapshotEnable{}.Call(p)
+
+	snapshot, err := proto.DOMSnapshotCaptureSnapshot{
+		ComputedStyles:                 []string{},
+		IncludePaintOrder:              true,
+		IncludeDOMRects:                true,
+		IncludeBlendedBackgroundColors: true,
+		IncludeTextColorOpacities:      true,
+	}.Call(p)
+	if err != nil {
+		return nil, err
+	}
+	return snapshot, nil
+}
+
 // PDF prints page as PDF
 func (p *Page) PDF(req *proto.PagePrintToPDF) (*StreamReader, error) {
 	req.TransferMode = proto.PagePrintToPDFTransferModeReturnAsStream
@@ -405,7 +499,7 @@ func (p *Page) PDF(req *proto.PagePrintToPDF) (*StreamReader, error) {
 }
 
 // GetResource content by the url. Such as image, css, html, etc.
-// Use the proto.PageGetResourceTree to list all the resources.
+// Use the [proto.PageGetResourceTree] to list all the resources.
 func (p *Page) GetResource(url string) ([]byte, error) {
 	res, err := proto.PageGetResourceContent{
 		FrameID: p.FrameID,
@@ -448,19 +542,18 @@ func (p *Page) WaitOpen() func() (*Page, error) {
 // EachEvent of the specified event types, if any callback returns true the wait function will resolve,
 // The type of each callback is (? means optional):
 //
-//     func(proto.Event, proto.TargetSessionID?) bool?
+//	func(proto.Event, proto.TargetSessionID?) bool?
 //
 // You can listen to multiple event types at the same time like:
 //
-//     browser.EachEvent(func(a *proto.A) {}, func(b *proto.B) {})
+//	browser.EachEvent(func(a *proto.A) {}, func(b *proto.B) {})
 //
 // Such as subscribe the events to know when the navigation is complete or when the page is rendered.
 // Here's an example to dismiss all dialogs/alerts on the page:
 //
-//      go page.EachEvent(func(e *proto.PageJavascriptDialogOpening) {
-//          _ = proto.PageHandleJavaScriptDialog{ Accept: false, PromptText: ""}.Call(page)
-//      })()
-//
+//	go page.EachEvent(func(e *proto.PageJavascriptDialogOpening) {
+//	    _ = proto.PageHandleJavaScriptDialog{ Accept: false, PromptText: ""}.Call(page)
+//	})()
 func (p *Page) EachEvent(callbacks ...interface{}) (wait func()) {
 	return p.browser.Context(p.ctx).eachEvent(p.SessionID, callbacks...)
 }
@@ -472,7 +565,7 @@ func (p *Page) WaitEvent(e proto.Event) (wait func()) {
 }
 
 // WaitNavigation wait for a page lifecycle event when navigating.
-// Usually you will wait for proto.PageLifecycleEventNameNetworkAlmostIdle
+// Usually you will wait for [proto.PageLifecycleEventNameNetworkAlmostIdle]
 func (p *Page) WaitNavigation(name proto.PageLifecycleEventName) func() {
 	_ = proto.PageSetLifecycleEventsEnabled{Enabled: true}.Call(p)
 
@@ -489,35 +582,53 @@ func (p *Page) WaitNavigation(name proto.PageLifecycleEventName) func() {
 
 // WaitRequestIdle returns a wait function that waits until no request for d duration.
 // Be careful, d is not the max wait timeout, it's the least idle time.
-// If you want to set a timeout you can use the "Page.Timeout" function.
+// If you want to set a timeout you can use the [Page.Timeout] function.
 // Use the includes and excludes regexp list to filter the requests by their url.
-func (p *Page) WaitRequestIdle(d time.Duration, includes, excludes []string) func() {
+func (p *Page) WaitRequestIdle(d time.Duration, includes, excludes []string, excludeTypes []proto.NetworkResourceType) func() {
+	defer p.tryTrace(TraceTypeWait, "request-idle")()
+
+	if excludeTypes == nil {
+		excludeTypes = []proto.NetworkResourceType{
+			proto.NetworkResourceTypeWebSocket,
+			proto.NetworkResourceTypeEventSource,
+			proto.NetworkResourceTypeMedia,
+			proto.NetworkResourceTypeImage,
+			proto.NetworkResourceTypeFont,
+		}
+	}
+
 	if len(includes) == 0 {
 		includes = []string{""}
 	}
 
 	p, cancel := p.WithCancel()
 	match := genRegMatcher(includes, excludes)
-	waitlist := map[proto.NetworkRequestID]string{}
+	waitList := map[proto.NetworkRequestID]string{}
 	idleCounter := utils.NewIdleCounter(d)
 	update := p.tryTraceReq(includes, excludes)
 	update(nil)
 
 	checkDone := func(id proto.NetworkRequestID) {
-		if _, has := waitlist[id]; has {
-			delete(waitlist, id)
-			update(waitlist)
+		if _, has := waitList[id]; has {
+			delete(waitList, id)
+			update(waitList)
 			idleCounter.Done()
 		}
 	}
 
 	wait := p.EachEvent(func(sent *proto.NetworkRequestWillBeSent) {
+		for _, t := range excludeTypes {
+			if sent.Type == t {
+				return
+			}
+		}
+
 		if match(sent.Request.URL) {
 			// Redirect will send multiple NetworkRequestWillBeSent events with the same RequestID,
 			// we should filter them out.
-			if _, has := waitlist[sent.RequestID]; !has {
-				waitlist[sent.RequestID] = sent.Request.URL
-				update(waitlist)
+			if _, has := waitList[sent.RequestID]; !has {
+				waitList[sent.RequestID] = sent.Request.URL
+				update(waitList)
 				idleCounter.Add()
 			}
 		}
@@ -536,9 +647,73 @@ func (p *Page) WaitRequestIdle(d time.Duration, includes, excludes []string) fun
 	}
 }
 
+// WaitDOMStable waits until the change of the DOM tree is less or equal than diff percent for d duration.
+// Be careful, d is not the max wait timeout, it's the least stable time.
+// If you want to set a timeout you can use the [Page.Timeout] function.
+func (p *Page) WaitDOMStable(d time.Duration, diff float64) error {
+	defer p.tryTrace(TraceTypeWait, "dom-stable")()
+
+	domSnapshot, err := p.CaptureDOMSnapshot()
+	if err != nil {
+		return err
+	}
+
+	t := time.NewTicker(d)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-t.C:
+		case <-p.ctx.Done():
+			return p.ctx.Err()
+		}
+
+		currentDomSnapshot, err := p.CaptureDOMSnapshot()
+		if err != nil {
+			return err
+		}
+
+		xs := lcs.NewWords(domSnapshot.Strings)
+		ys := lcs.NewWords(currentDomSnapshot.Strings)
+		lcs := xs.YadLCS(p.ctx, ys)
+
+		df := 1 - float64(len(lcs))/float64(len(ys))
+		if df <= diff {
+			break
+		}
+
+		domSnapshot = currentDomSnapshot
+	}
+	return nil
+}
+
+// WaitStable waits until the page is stable for d duration.
+func (p *Page) WaitStable(d time.Duration) error {
+	defer p.tryTrace(TraceTypeWait, "stable")()
+
+	var err error
+	lock := sync.Mutex{}
+
+	utils.All(func() {
+		e := p.WaitLoad()
+		lock.Lock()
+		err = e
+		lock.Unlock()
+	}, func() {
+		p.WaitRequestIdle(d, nil, nil, nil)()
+	}, func() {
+		e := p.WaitDOMStable(d, 0)
+		lock.Lock()
+		err = e
+		lock.Unlock()
+	})()
+
+	return err
+}
+
 // WaitIdle waits until the next window.requestIdleCallback is called.
 func (p *Page) WaitIdle(timeout time.Duration) (err error) {
-	_, err = p.Evaluate(evalHelper(js.WaitIdle, timeout.Seconds()).ByPromise())
+	_, err = p.Evaluate(evalHelper(js.WaitIdle, timeout.Milliseconds()).ByPromise())
 	return err
 }
 
@@ -601,7 +776,7 @@ func (p *Page) Wait(opts *EvalOptions) error {
 	})
 }
 
-// WaitElementsMoreThan Wait until there are more than <num> <selector> elements.
+// WaitElementsMoreThan waits until there are more than num elements that match the selector.
 func (p *Page) WaitElementsMoreThan(selector string, num int) error {
 	return p.Wait(Eval(`(s, n) => document.querySelectorAll(s).length > n`, selector, num))
 }
@@ -651,7 +826,7 @@ func (p *Page) ElementFromObject(obj *proto.RuntimeRemoteObject) (*Element, erro
 	}, nil
 }
 
-// ElementFromNode creates an Element from the node, NodeID or BackendNodeID must be specified.
+// ElementFromNode creates an Element from the node, [proto.DOMNodeID] or [proto.DOMBackendNodeID] must be specified.
 func (p *Page) ElementFromNode(node *proto.DOMNode) (*Element, error) {
 	res, err := proto.DOMResolveNode{
 		NodeID:        node.NodeID,
@@ -702,7 +877,7 @@ func (p *Page) Release(obj *proto.RuntimeRemoteObject) error {
 	return err
 }
 
-// Call implements the proto.Client
+// Call implements the [proto.Client]
 func (p *Page) Call(ctx context.Context, sessionID, methodName string, params interface{}) (res []byte, err error) {
 	return p.browser.Call(ctx, sessionID, methodName, params)
 }
