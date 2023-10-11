@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/go-rod/rod v0.108.1
 	github.com/saucesteals/fhttp v0.0.0-20220605173003-49317810090d
+	github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a
 	github.com/ysmood/goob v0.4.0
 	github.com/ysmood/got v0.32.0
 	github.com/ysmood/gotrace v0.6.0

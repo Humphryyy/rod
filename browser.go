@@ -10,6 +10,7 @@ package rod
 import (
 	"context"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,13 +24,15 @@ import (
 )
 
 // Browser implements these interfaces
-var _ proto.Client = &Browser{}
-var _ proto.Contextable = &Browser{}
+var (
+	_ proto.Client      = &Browser{}
+	_ proto.Contextable = &Browser{}
+)
 
 // Browser represents the browser.
 // It doesn't depends on file system, it should work with remote browser seamlessly.
 // To check the env var you can use to quickly enable options from CLI, check here:
-// https://pkg.go.dev/github.com/Humphryyy/rod/lib/defaults
+// https://pkg.go.dev/github.com/go-rod/rod/lib/defaults
 type Browser struct {
 	// BrowserContextID is the id for incognito window
 	BrowserContextID proto.BrowserBrowserContextID
@@ -60,8 +63,9 @@ type Browser struct {
 }
 
 // New creates a controller.
-// DefaultDevice to emulate is set to devices.LaptopWithMDPIScreen.Landscape(), it can make the actual view area
-// smaller than the browser window on headful mode, you can use NoDefaultDevice to disable it.
+// DefaultDevice to emulate is set to [devices.LaptopWithMDPIScreen].Landscape(), it will change the default
+// user-agent and can make the actual view area smaller than the browser window on headful mode,
+// you can use [Browser.NoDefaultDevice] to disable it.
 func New() *Browser {
 	return (&Browser{
 		ctx:           context.Background(),
@@ -108,7 +112,7 @@ func (b *Browser) Trace(enable bool) *Browser {
 	return b
 }
 
-// Monitor address to listen if not empty. Shortcut for Browser.ServeMonitor
+// Monitor address to listen if not empty. Shortcut for [Browser.ServeMonitor]
 func (b *Browser) Monitor(url string) *Browser {
 	b.monitor = url
 	return b
@@ -127,14 +131,14 @@ func (b *Browser) Client(c CDPClient) *Browser {
 }
 
 // DefaultDevice sets the default device for new page to emulate in the future.
-// Default is devices.LaptopWithMDPIScreen .
-// Set it to devices.Clear to disable it.
+// Default is [devices.LaptopWithMDPIScreen].
+// Set it to [devices.Clear] to disable it.
 func (b *Browser) DefaultDevice(d devices.Device) *Browser {
 	b.defaultDevice = d
 	return b
 }
 
-// NoDefaultDevice is the same as DefaultDevice(devices.Clear)
+// NoDefaultDevice is the same as [Browser.DefaultDevice](devices.Clear)
 func (b *Browser) NoDefaultDevice() *Browser {
 	return b.DefaultDevice(devices.Clear)
 }
@@ -232,7 +236,7 @@ func (b *Browser) Pages() (Pages, error) {
 	return pageList, nil
 }
 
-// Call raw cdp interface directly
+// Call implements the [proto.Client] to call raw cdp interface directly.
 func (b *Browser) Call(ctx context.Context, sessionID, methodName string, params interface{}) (res []byte, err error) {
 	res, err = b.client.Call(ctx, sessionID, methodName, params)
 	if err != nil {
@@ -311,7 +315,7 @@ func (b *Browser) PageFromTarget(targetID proto.TargetTargetID) (*Page, error) {
 	return page, nil
 }
 
-// EachEvent is similar to Page.EachEvent, but catches events of the entire browser.
+// EachEvent is similar to [Page.EachEvent], but catches events of the entire browser.
 func (b *Browser) EachEvent(callbacks ...interface{}) (wait func()) {
 	return b.eachEvent("", callbacks...)
 }
@@ -455,6 +459,16 @@ func (b *Browser) pageInfo(id proto.TargetTargetID) (*proto.TargetTargetInfo, er
 		return nil, err
 	}
 	return res.TargetInfo, nil
+}
+
+func (b *Browser) isHeadless() (enabled bool) {
+	res, _ := proto.BrowserGetBrowserCommandLine{}.Call(b)
+	for _, v := range res.Arguments {
+		if strings.Contains(v, "headless") {
+			return true
+		}
+	}
+	return false
 }
 
 // IgnoreCertErrors switch. If enabled, all certificate errors will be ignored.

@@ -18,9 +18,11 @@ import (
 )
 
 // Element implements these interfaces
-var _ proto.Client = &Element{}
-var _ proto.Contextable = &Element{}
-var _ proto.Sessionable = &Element{}
+var (
+	_ proto.Client      = &Element{}
+	_ proto.Contextable = &Element{}
+	_ proto.Sessionable = &Element{}
+)
 
 // Element represents the DOM element
 type Element struct {
@@ -254,7 +256,9 @@ func (el *Element) SelectAllText() error {
 
 // Input focuses on the element and input text to it.
 // Before the action, it will scroll to the element, wait until it's visible, enabled and writable.
-// To empty the input you can use something like el.SelectAllText().MustInput("")
+// To empty the input you can use something like
+//
+//	el.SelectAllText().MustInput("")
 func (el *Element) Input(text string) error {
 	err := el.Focus()
 	if err != nil {
@@ -301,7 +305,31 @@ func (el *Element) InputTime(t time.Time) error {
 	return err
 }
 
-// Blur is similar to the method Blur
+// InputColor focuses on the element and inputs a color string to it.
+// Before the action, it will scroll to the element, wait until it's visible, enabled and writable.
+func (el *Element) InputColor(color string) error {
+	err := el.Focus()
+	if err != nil {
+		return err
+	}
+
+	err = el.WaitEnabled()
+	if err != nil {
+		return err
+	}
+
+	err = el.WaitWritable()
+	if err != nil {
+		return err
+	}
+
+	defer el.tryTrace(TraceTypeInput, "input "+color)()
+
+	_, err = el.Evaluate(evalHelper(js.InputColor, color))
+	return err
+}
+
+// Blur removes focus from the element.
 func (el *Element) Blur() error {
 	_, err := el.Evaluate(Eval("() => this.blur()").ByUser())
 	return err
@@ -309,7 +337,7 @@ func (el *Element) Blur() error {
 
 // Select the children option elements that match the selectors.
 // Before the action, it will scroll to the element, wait until it's visible.
-// If no option matches the selectors, it will return ErrElementNotFound.
+// If no option matches the selectors, it will return [ErrElementNotFound].
 func (el *Element) Select(selectors []string, selected bool, t SelectorType) error {
 	err := el.Focus()
 	if err != nil {
@@ -392,9 +420,9 @@ func (el *Element) SetFiles(paths []string) error {
 // Describe the current element. The depth is the maximum depth at which children should be retrieved, defaults to 1,
 // use -1 for the entire subtree or provide an integer larger than 0.
 // The pierce decides whether or not iframes and shadow roots should be traversed when returning the subtree.
-// The returned proto.DOMNode.NodeID will always be empty, because NodeID is not stable (when proto.DOMDocumentUpdated
+// The returned [proto.DOMNode.NodeID] will always be empty, because NodeID is not stable (when [proto.DOMDocumentUpdated]
 // is fired all NodeID on the page will be reassigned to another value)
-// we don't recommend using the NodeID, instead, use the BackendNodeID to identify the element.
+// we don't recommend using the NodeID, instead, use the [proto.DOMBackendNodeID] to identify the element.
 func (el *Element) Describe(depth int, pierce bool) (*proto.DOMNode, error) {
 	val, err := proto.DOMDescribeNode{ObjectID: el.id(), Depth: gson.Int(depth), Pierce: pierce}.Call(el)
 	if err != nil {
@@ -485,7 +513,7 @@ func (el *Element) WaitLoad() error {
 
 // WaitStable waits until no shape or position change for d duration.
 // Be careful, d is not the max wait timeout, it's the least stable time.
-// If you want to set a timeout you can use the "Element.Timeout" function.
+// If you want to set a timeout you can use the [Element.Timeout] function.
 func (el *Element) WaitStable(d time.Duration) error {
 	err := el.WaitVisible()
 	if err != nil {
@@ -521,7 +549,7 @@ func (el *Element) WaitStable(d time.Duration) error {
 }
 
 // WaitStableRAF waits until no shape or position change for 2 consecutive animation frames.
-// If you want to wait animation that is triggered by JS not CSS, you'd better use Element.WaitStable.
+// If you want to wait animation that is triggered by JS not CSS, you'd better use [Element.WaitStable].
 // About animation frame: https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
 func (el *Element) WaitStableRAF() error {
 	err := el.WaitVisible()
@@ -675,7 +703,7 @@ func (el *Element) Screenshot(format proto.PageCaptureScreenshotFormat, quality 
 	)
 }
 
-// Release is a shortcut for Page.Release(el.Object)
+// Release is a shortcut for [Page.Release] current element.
 func (el *Element) Release() error {
 	return el.page.Context(el.ctx).Release(el.Object)
 }
@@ -689,17 +717,17 @@ func (el *Element) Remove() error {
 	return el.Release()
 }
 
-// Call implements the proto.Client
+// Call implements the [proto.Client]
 func (el *Element) Call(ctx context.Context, sessionID, methodName string, params interface{}) (res []byte, err error) {
 	return el.page.Call(ctx, sessionID, methodName, params)
 }
 
-// Eval is a shortcut for Element.Evaluate with AwaitPromise, ByValue and AutoExp set to true.
+// Eval is a shortcut for [Element.Evaluate] with AwaitPromise, ByValue and AutoExp set to true.
 func (el *Element) Eval(js string, params ...interface{}) (*proto.RuntimeRemoteObject, error) {
 	return el.Evaluate(Eval(js, params...).ByPromise())
 }
 
-// Evaluate is just a shortcut of Page.Evaluate with This set to current element.
+// Evaluate is just a shortcut of [Page.Evaluate] with This set to current element.
 func (el *Element) Evaluate(opts *EvalOptions) (*proto.RuntimeRemoteObject, error) {
 	return el.page.Context(el.ctx).Evaluate(opts.This(el.Object))
 }
