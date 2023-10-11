@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Humphryyy/rod/lib/defaults"
 	"github.com/Humphryyy/rod/lib/launcher/flags"
@@ -39,6 +40,8 @@ type Launcher struct {
 
 	managed    bool
 	serviceURL string
+
+	isLaunched int32 // zero means not launched
 }
 
 // New returns the default arguments to start browser.
@@ -70,6 +73,7 @@ func New() *Launcher {
 		// TODO: about the "site-per-process" see https://github.com/puppeteer/puppeteer/issues/2548
 		"disable-features": {"site-per-process", "TranslateUI"},
 
+		"disable-dev-shm-usage":                              nil,
 		"disable-background-networking":                      nil,
 		"disable-background-timer-throttling":                nil,
 		"disable-backgrounding-occluded-windows":             nil,
@@ -157,9 +161,11 @@ func (l *Launcher) Context(ctx context.Context) *Launcher {
 	return l
 }
 
-// Set a command line argument when launching the browser. Be careful the first argument is a flag name,
-// it shouldn't contain values. The values the will be joined with comma.
+// Set a command line argument when launching the browser.
+// Be careful the first argument is a flag name, it shouldn't contain values. The values the will be joined with comma.
+// A flag can have multiple values. If no values are provided the flag will be a boolean flag.
 // You can use the [Launcher.FormatArgs] to debug the final CLI arguments.
+// List of available flags: https://peter.sh/experiments/chromium-command-line-switches
 func (l *Launcher) Set(name flags.Flag, values ...string) *Launcher {
 	name.Check()
 	l.Flags[name.NormalizeFlag()] = values
@@ -303,7 +309,6 @@ func (l *Launcher) RemoteDebuggingPort(port int) *Launcher {
 
 // Proxy for the browser
 func (l *Launcher) Proxy(host string) *Launcher {
-	_ = l.browser.Proxy(host)
 	return l.Set(flags.ProxyServer, host)
 }
 
@@ -312,7 +317,7 @@ func (l *Launcher) WorkingDir(path string) *Launcher {
 	return l.Set(flags.WorkingDir, path)
 }
 
-// Env to launch the browser process. The default value is os.Environ().
+// Env to launch the browser process. The default value is [os.Environ]().
 // Usually you use it to set the timezone env. Such as:
 //
 //	Env(append(os.Environ(), "TZ=Asia/Tokyo")...)
@@ -357,7 +362,9 @@ func (l *Launcher) FormatArgs() []string {
 }
 
 // Logger to handle stdout and stderr from browser.
-// For example, pipe all browser output to stdout: launcher.New().Logger(os.Stdout)
+// For example, pipe all browser output to stdout:
+//
+//	launcher.New().Logger(os.Stdout)
 func (l *Launcher) Logger(w io.Writer) *Launcher {
 	l.logger = w
 	return l
@@ -372,8 +379,14 @@ func (l *Launcher) MustLaunch() string {
 
 // Launch a standalone temp browser instance and returns the debug url.
 // bin and profileDir are optional, set them to empty to use the default values.
-// If you want to reuse sessions, such as cookies, set the UserDataDir to the same location.
+// If you want to reuse sessions, such as cookies, set the [Launcher.UserDataDir] to the same location.
+//
+// Please note launcher can only be used once.
 func (l *Launcher) Launch() (string, error) {
+	if l.hasLaunched() {
+		return "", ErrAlreadyLaunched
+	}
+
 	defer l.ctxCancel()
 
 	bin, err := l.getBin()
@@ -424,6 +437,10 @@ func (l *Launcher) Launch() (string, error) {
 	}
 
 	return ResolveURL(u)
+}
+
+func (l *Launcher) hasLaunched() bool {
+	return !atomic.CompareAndSwapInt32(&l.isLaunched, 0, 1)
 }
 
 func (l *Launcher) setupCmd(cmd *exec.Cmd) {
@@ -480,7 +497,7 @@ func (l *Launcher) Kill() {
 	}
 }
 
-// Cleanup wait until the Browser exits and remove UserDataDir
+// Cleanup wait until the Browser exits and remove [flags.UserDataDir]
 func (l *Launcher) Cleanup() {
 	<-l.exit
 

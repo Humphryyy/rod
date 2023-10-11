@@ -30,13 +30,16 @@ func Example() {
 	defer browser.MustClose()
 
 	// Create a new page
-	page := browser.MustPage("https://github.com")
+	page := browser.MustPage("https://github.com").MustWaitStable()
+
+	// Trigger the search input with hotkey "/"
+	page.Keyboard.MustType(input.Slash)
 
 	// We use css selector to get the search input element and input "git"
-	page.MustElement("input").MustInput("git").MustType(input.Enter)
+	page.MustElement("#query-builder-test").MustInput("git").MustType(input.Enter)
 
 	// Wait until css selector get the element then get the text content of it.
-	text := page.MustElement(".codesearch-results p").MustText()
+	text := page.MustElementR("span", "most widely used").MustText()
 
 	fmt.Println(text)
 
@@ -55,9 +58,9 @@ func Example() {
 
 	// Output:
 	// Git is the most widely used version control system.
-	// Found 5 input elements
+	// Found 11 input elements
 	// 1 + 2 = 3
-	// Search · git · GitHub
+	// Repository search results · GitHub
 }
 
 // Shows how to disable headless mode and debug.
@@ -70,7 +73,7 @@ func Example_disable_headless_to_debug() {
 		Headless(false).
 		Devtools(true)
 
-	defer l.Cleanup() // remove launcher.FlagUserDataDir
+	defer l.Cleanup()
 
 	url := l.MustLaunch()
 
@@ -105,7 +108,7 @@ func Example_disable_headless_to_debug() {
 // Context will be recursively passed to all sub-methods.
 // For example, methods like Page.Context(ctx) will return a clone of the page with the ctx,
 // all the methods of the returned page will use the ctx if they have IO blocking operations.
-// Page.Timeout or Page.WithCancel is just a shortcut for Page.Context.
+// [Page.Timeout] or [Page.WithCancel] is just a shortcut for Page.Context.
 // Of course, Browser or Element works the same way.
 func Example_context_and_timeout() {
 	page := rod.New().MustConnect().MustPage("https://github.com")
@@ -139,6 +142,27 @@ func Example_context_and_timeout() {
 			cancel()
 		}()
 		page.MustElement("a")
+	}
+}
+
+func Example_context_and_EachEvent() {
+	browser := rod.New().MustConnect()
+	defer browser.MustClose()
+
+	page := browser.MustPage("https://github.com").MustWaitLoad()
+
+	page, cancel := page.WithCancel()
+
+	go func() {
+		time.Sleep(time.Second)
+		cancel()
+	}()
+
+	// It's a blocking method, it will wait until the context is cancelled
+	page.EachEvent(func(e *proto.PageLifecycleEvent) {})()
+
+	if page.GetContext().Err() == context.Canceled {
+		fmt.Println("cancelled")
 	}
 }
 
@@ -341,8 +365,8 @@ func Example_customize_retry_strategy() {
 	fmt.Println(el.MustProperty("name"))
 
 	// Output:
-	// q
-	// q
+	// type
+	// type
 }
 
 // Shows how we can further customize the browser with the launcher library.

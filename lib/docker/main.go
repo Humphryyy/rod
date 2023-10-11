@@ -1,7 +1,7 @@
 // The .github/workflows/docker.yml uses it as an github action
 // and run it like this:
 //
-//	DOCKER_TOKEN=$TOKEN go run ./lib/utils/docker $GITHUB_REF
+//	GITHUB_TOKEN=$TOKEN go run ./lib/utils/docker $GITHUB_REF
 package main
 
 import (
@@ -19,7 +19,7 @@ func main() {
 
 	fmt.Println("Event:", event)
 
-	master := regexp.MustCompile(`^refs/heads/master$`).MatchString(event)
+	isMain := regexp.MustCompile(`^refs/heads/main$`).MatchString(event)
 	m := regexp.MustCompile(`^refs/tags/(v[0-9]+\.[0-9]+\.[0-9]+)$`).FindStringSubmatch(event)
 	ver := ""
 	if len(m) > 1 {
@@ -28,10 +28,10 @@ func main() {
 
 	at := getArchType()
 
-	if master {
+	if isMain {
 		releaseLatest(at)
 	} else if ver != "" {
-		releaseWithVer(ver, at)
+		releaseWithVer(ver)
 	} else {
 		test(at)
 	}
@@ -45,7 +45,7 @@ func releaseLatest(at archType) {
 	utils.Exec("docker push", at.tag())
 }
 
-func releaseWithVer(ver string, at archType) {
+func releaseWithVer(ver string) {
 	login()
 
 	verImageDev := registry + ":" + ver + "-dev"
@@ -85,7 +85,7 @@ func test(at archType) {
 }
 
 func login() {
-	cmd := exec.Command("docker", "login", "-u=rod-robot", "-p", os.Getenv("DOCKER_TOKEN"), registry)
+	cmd := exec.Command("docker", "login", "-u=rod-robot", "-p", os.Getenv("GITHUB_TOKEN"), registry)
 	out, err := cmd.CombinedOutput()
 	utils.E(err)
 	utils.E(os.Stdout.Write(out))
@@ -94,7 +94,6 @@ func login() {
 var headSha = strings.TrimSpace(utils.ExecLine(false, "git", "rev-parse", "HEAD"))
 
 func description(dev bool) string {
-
 	f := "Dockerfile"
 	if dev {
 		f = "dev." + f

@@ -39,7 +39,6 @@ const (
 
 // CSSPseudoElementMatches CSS rule collection for a single pseudo style.
 type CSSPseudoElementMatches struct {
-
 	// PseudoType Pseudo element type.
 	PseudoType DOMPseudoType `json:"pseudoType"`
 
@@ -52,7 +51,6 @@ type CSSPseudoElementMatches struct {
 
 // CSSInheritedStyleEntry Inherited CSS rule collection from ancestor node.
 type CSSInheritedStyleEntry struct {
-
 	// InlineStyle (optional) The ancestor node's inline style, if any, in the style inheritance chain.
 	InlineStyle *CSSCSSStyle `json:"inlineStyle,omitempty"`
 
@@ -62,14 +60,12 @@ type CSSInheritedStyleEntry struct {
 
 // CSSInheritedPseudoElementMatches Inherited pseudo element matches from pseudos of an ancestor node.
 type CSSInheritedPseudoElementMatches struct {
-
 	// PseudoElements Matches of pseudo styles from the pseudos of an ancestor node.
 	PseudoElements []*CSSPseudoElementMatches `json:"pseudoElements"`
 }
 
 // CSSRuleMatch Match data for a CSS rule.
 type CSSRuleMatch struct {
-
 	// Rule CSS rule in the match.
 	Rule *CSSCSSRule `json:"rule"`
 
@@ -79,7 +75,6 @@ type CSSRuleMatch struct {
 
 // CSSValue Data for a simple selector (these are delimited by commas in a selector list).
 type CSSValue struct {
-
 	// Text Value text.
 	Text string `json:"text"`
 
@@ -89,7 +84,6 @@ type CSSValue struct {
 
 // CSSSelectorList Selector list data.
 type CSSSelectorList struct {
-
 	// Selectors Selectors in the list.
 	Selectors []*CSSValue `json:"selectors"`
 
@@ -99,7 +93,6 @@ type CSSSelectorList struct {
 
 // CSSCSSStyleSheetHeader CSS stylesheet metainformation.
 type CSSCSSStyleSheetHeader struct {
-
 	// StyleSheetID The stylesheet identifier.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -157,11 +150,13 @@ type CSSCSSStyleSheetHeader struct {
 
 	// EndColumn Column offset of the end of the stylesheet within the resource (zero based).
 	EndColumn float64 `json:"endColumn"`
+
+	// LoadingFailed (experimental) (optional) If the style sheet was loaded from a network resource, this indicates when the resource failed to load
+	LoadingFailed bool `json:"loadingFailed,omitempty"`
 }
 
 // CSSCSSRule CSS rule representation.
 type CSSCSSRule struct {
-
 	// StyleSheetID (optional) The css style sheet identifier (absent for user agent stylesheet and user-specified
 	// stylesheet rules) this rule came from.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId,omitempty"`
@@ -201,7 +196,6 @@ type CSSCSSRule struct {
 
 // CSSRuleUsage CSS coverage information.
 type CSSRuleUsage struct {
-
 	// StyleSheetID The css style sheet identifier (absent for user agent stylesheet and user-specified
 	// stylesheet rules) this rule came from.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
@@ -218,7 +212,6 @@ type CSSRuleUsage struct {
 
 // CSSSourceRange Text range within a resource. All numbers are zero-based.
 type CSSSourceRange struct {
-
 	// StartLine Start line of range.
 	StartLine int `json:"startLine"`
 
@@ -234,7 +227,6 @@ type CSSSourceRange struct {
 
 // CSSShorthandEntry ...
 type CSSShorthandEntry struct {
-
 	// Name Shorthand name.
 	Name string `json:"name"`
 
@@ -247,7 +239,6 @@ type CSSShorthandEntry struct {
 
 // CSSCSSComputedStyleProperty ...
 type CSSCSSComputedStyleProperty struct {
-
 	// Name Computed style property name.
 	Name string `json:"name"`
 
@@ -257,7 +248,6 @@ type CSSCSSComputedStyleProperty struct {
 
 // CSSCSSStyle CSS style representation.
 type CSSCSSStyle struct {
-
 	// StyleSheetID (optional) The css style sheet identifier (absent for user agent stylesheet and user-specified
 	// stylesheet rules) this rule came from.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId,omitempty"`
@@ -277,7 +267,6 @@ type CSSCSSStyle struct {
 
 // CSSCSSProperty CSS property declaration data.
 type CSSCSSProperty struct {
-
 	// Name The property name.
 	Name string `json:"name"`
 
@@ -326,7 +315,6 @@ const (
 
 // CSSCSSMedia CSS media rule descriptor.
 type CSSCSSMedia struct {
-
 	// Text Media query text.
 	Text string `json:"text"`
 
@@ -352,7 +340,6 @@ type CSSCSSMedia struct {
 
 // CSSMediaQuery Media query descriptor.
 type CSSMediaQuery struct {
-
 	// Expressions Array of media query expressions.
 	Expressions []*CSSMediaQueryExpression `json:"expressions"`
 
@@ -362,7 +349,6 @@ type CSSMediaQuery struct {
 
 // CSSMediaQueryExpression Media query expression descriptor.
 type CSSMediaQueryExpression struct {
-
 	// Value Media query expression value.
 	Value float64 `json:"value"`
 
@@ -381,7 +367,6 @@ type CSSMediaQueryExpression struct {
 
 // CSSCSSContainerQuery (experimental) CSS container query rule descriptor.
 type CSSCSSContainerQuery struct {
-
 	// Text Container query text.
 	Text string `json:"text"`
 
@@ -404,7 +389,6 @@ type CSSCSSContainerQuery struct {
 
 // CSSCSSSupports (experimental) CSS Supports at-rule descriptor.
 type CSSCSSSupports struct {
-
 	// Text Supports rule text.
 	Text string `json:"text"`
 
@@ -421,7 +405,6 @@ type CSSCSSSupports struct {
 
 // CSSCSSScope (experimental) CSS Scope at-rule descriptor.
 type CSSCSSScope struct {
-
 	// Text Scope rule text.
 	Text string `json:"text"`
 
@@ -435,7 +418,6 @@ type CSSCSSScope struct {
 
 // CSSCSSLayer (experimental) CSS Layer at-rule descriptor.
 type CSSCSSLayer struct {
-
 	// Text Layer name.
 	Text string `json:"text"`
 
@@ -449,7 +431,6 @@ type CSSCSSLayer struct {
 
 // CSSCSSLayerData (experimental) CSS Layer data.
 type CSSCSSLayerData struct {
-
 	// Name Layer name.
 	Name string `json:"name"`
 
@@ -463,7 +444,6 @@ type CSSCSSLayerData struct {
 
 // CSSPlatformFontUsage Information about amount of glyphs that were rendered with given font.
 type CSSPlatformFontUsage struct {
-
 	// FamilyName Font's family name reported by platform.
 	FamilyName string `json:"familyName"`
 
@@ -476,7 +456,6 @@ type CSSPlatformFontUsage struct {
 
 // CSSFontVariationAxis Information about font variation axes for variable fonts
 type CSSFontVariationAxis struct {
-
 	// Tag The font-variation-setting tag (a.k.a. "axis tag").
 	Tag string `json:"tag"`
 
@@ -496,7 +475,6 @@ type CSSFontVariationAxis struct {
 // CSSFontFace Properties of a web font: https://www.w3.org/TR/2008/REC-CSS2-20080411/fonts.html#font-descriptions
 // and additional information such as platformFontFamily and fontVariationAxes.
 type CSSFontFace struct {
-
 	// FontFamily The font-family.
 	FontFamily string `json:"fontFamily"`
 
@@ -530,7 +508,6 @@ type CSSFontFace struct {
 
 // CSSCSSTryRule CSS try rule representation.
 type CSSCSSTryRule struct {
-
 	// StyleSheetID (optional) The css style sheet identifier (absent for user agent stylesheet and user-specified
 	// stylesheet rules) this rule came from.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId,omitempty"`
@@ -538,13 +515,12 @@ type CSSCSSTryRule struct {
 	// Origin Parent stylesheet's origin.
 	Origin CSSStyleSheetOrigin `json:"origin"`
 
-	// Style (optional) Associated style declaration.
-	Style *CSSCSSStyle `json:"style,omitempty"`
+	// Style Associated style declaration.
+	Style *CSSCSSStyle `json:"style"`
 }
 
 // CSSCSSPositionFallbackRule CSS position-fallback rule representation.
 type CSSCSSPositionFallbackRule struct {
-
 	// Name ...
 	Name *CSSValue `json:"name"`
 
@@ -554,7 +530,6 @@ type CSSCSSPositionFallbackRule struct {
 
 // CSSCSSKeyframesRule CSS keyframes rule representation.
 type CSSCSSKeyframesRule struct {
-
 	// AnimationName Animation name.
 	AnimationName *CSSValue `json:"animationName"`
 
@@ -564,7 +539,6 @@ type CSSCSSKeyframesRule struct {
 
 // CSSCSSKeyframeRule CSS keyframe rule representation.
 type CSSCSSKeyframeRule struct {
-
 	// StyleSheetID (optional) The css style sheet identifier (absent for user agent stylesheet and user-specified
 	// stylesheet rules) this rule came from.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId,omitempty"`
@@ -581,7 +555,6 @@ type CSSCSSKeyframeRule struct {
 
 // CSSStyleDeclarationEdit A descriptor of operation to mutate style declaration text.
 type CSSStyleDeclarationEdit struct {
-
 	// StyleSheetID The css style sheet identifier.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -595,7 +568,6 @@ type CSSStyleDeclarationEdit struct {
 // CSSAddRule Inserts a new rule with the given `ruleText` in a stylesheet with given `styleSheetId`, at the
 // position specified by `location`.
 type CSSAddRule struct {
-
 	// StyleSheetID The css style sheet identifier where a new rule should be inserted.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -617,14 +589,12 @@ func (m CSSAddRule) Call(c Client) (*CSSAddRuleResult, error) {
 
 // CSSAddRuleResult ...
 type CSSAddRuleResult struct {
-
 	// Rule The newly created rule.
 	Rule *CSSCSSRule `json:"rule"`
 }
 
 // CSSCollectClassNames Returns all class names from specified stylesheet.
 type CSSCollectClassNames struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 }
@@ -640,14 +610,12 @@ func (m CSSCollectClassNames) Call(c Client) (*CSSCollectClassNamesResult, error
 
 // CSSCollectClassNamesResult ...
 type CSSCollectClassNamesResult struct {
-
 	// ClassNames Class name list.
 	ClassNames []string `json:"classNames"`
 }
 
 // CSSCreateStyleSheet Creates a new special "via-inspector" stylesheet in the frame with given `frameId`.
 type CSSCreateStyleSheet struct {
-
 	// FrameID Identifier of the frame where "via-inspector" stylesheet should be created.
 	FrameID PageFrameID `json:"frameId"`
 }
@@ -663,14 +631,12 @@ func (m CSSCreateStyleSheet) Call(c Client) (*CSSCreateStyleSheetResult, error) 
 
 // CSSCreateStyleSheetResult ...
 type CSSCreateStyleSheetResult struct {
-
 	// StyleSheetID Identifier of the created "via-inspector" stylesheet.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 }
 
 // CSSDisable Disables the CSS agent for the given page.
-type CSSDisable struct {
-}
+type CSSDisable struct{}
 
 // ProtoReq name
 func (m CSSDisable) ProtoReq() string { return "CSS.disable" }
@@ -682,8 +648,7 @@ func (m CSSDisable) Call(c Client) error {
 
 // CSSEnable Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been
 // enabled until the result of this command is received.
-type CSSEnable struct {
-}
+type CSSEnable struct{}
 
 // ProtoReq name
 func (m CSSEnable) ProtoReq() string { return "CSS.enable" }
@@ -696,7 +661,6 @@ func (m CSSEnable) Call(c Client) error {
 // CSSForcePseudoState Ensures that the given node will have specified pseudo-classes whenever its style is computed by
 // the browser.
 type CSSForcePseudoState struct {
-
 	// NodeID The element id for which to force the pseudo state.
 	NodeID DOMNodeID `json:"nodeId"`
 
@@ -714,7 +678,6 @@ func (m CSSForcePseudoState) Call(c Client) error {
 
 // CSSGetBackgroundColors ...
 type CSSGetBackgroundColors struct {
-
 	// NodeID Id of the node to get background colors for.
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -730,7 +693,6 @@ func (m CSSGetBackgroundColors) Call(c Client) (*CSSGetBackgroundColorsResult, e
 
 // CSSGetBackgroundColorsResult ...
 type CSSGetBackgroundColorsResult struct {
-
 	// BackgroundColors (optional) The range of background colors behind this element, if it contains any visible text. If no
 	// visible text is present, this will be undefined. In the case of a flat background color,
 	// this will consist of simply that color. In the case of a gradient, this will consist of each
@@ -748,7 +710,6 @@ type CSSGetBackgroundColorsResult struct {
 
 // CSSGetComputedStyleForNode Returns the computed style for a DOM node identified by `nodeId`.
 type CSSGetComputedStyleForNode struct {
-
 	// NodeID ...
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -764,7 +725,6 @@ func (m CSSGetComputedStyleForNode) Call(c Client) (*CSSGetComputedStyleForNodeR
 
 // CSSGetComputedStyleForNodeResult ...
 type CSSGetComputedStyleForNodeResult struct {
-
 	// ComputedStyle Computed style for the specified DOM node.
 	ComputedStyle []*CSSCSSComputedStyleProperty `json:"computedStyle"`
 }
@@ -772,7 +732,6 @@ type CSSGetComputedStyleForNodeResult struct {
 // CSSGetInlineStylesForNode Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM
 // attributes) for a DOM node identified by `nodeId`.
 type CSSGetInlineStylesForNode struct {
-
 	// NodeID ...
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -788,7 +747,6 @@ func (m CSSGetInlineStylesForNode) Call(c Client) (*CSSGetInlineStylesForNodeRes
 
 // CSSGetInlineStylesForNodeResult ...
 type CSSGetInlineStylesForNodeResult struct {
-
 	// InlineStyle (optional) Inline style for the specified DOM node.
 	InlineStyle *CSSCSSStyle `json:"inlineStyle,omitempty"`
 
@@ -798,7 +756,6 @@ type CSSGetInlineStylesForNodeResult struct {
 
 // CSSGetMatchedStylesForNode Returns requested styles for a DOM node identified by `nodeId`.
 type CSSGetMatchedStylesForNode struct {
-
 	// NodeID ...
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -814,7 +771,6 @@ func (m CSSGetMatchedStylesForNode) Call(c Client) (*CSSGetMatchedStylesForNodeR
 
 // CSSGetMatchedStylesForNodeResult ...
 type CSSGetMatchedStylesForNodeResult struct {
-
 	// InlineStyle (optional) Inline style for the specified DOM node.
 	InlineStyle *CSSCSSStyle `json:"inlineStyle,omitempty"`
 
@@ -844,8 +800,7 @@ type CSSGetMatchedStylesForNodeResult struct {
 }
 
 // CSSGetMediaQueries Returns all media queries parsed by the rendering engine.
-type CSSGetMediaQueries struct {
-}
+type CSSGetMediaQueries struct{}
 
 // ProtoReq name
 func (m CSSGetMediaQueries) ProtoReq() string { return "CSS.getMediaQueries" }
@@ -858,7 +813,6 @@ func (m CSSGetMediaQueries) Call(c Client) (*CSSGetMediaQueriesResult, error) {
 
 // CSSGetMediaQueriesResult ...
 type CSSGetMediaQueriesResult struct {
-
 	// Medias ...
 	Medias []*CSSCSSMedia `json:"medias"`
 }
@@ -866,7 +820,6 @@ type CSSGetMediaQueriesResult struct {
 // CSSGetPlatformFontsForNode Requests information about platform fonts which we used to render child TextNodes in the given
 // node.
 type CSSGetPlatformFontsForNode struct {
-
 	// NodeID ...
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -882,14 +835,12 @@ func (m CSSGetPlatformFontsForNode) Call(c Client) (*CSSGetPlatformFontsForNodeR
 
 // CSSGetPlatformFontsForNodeResult ...
 type CSSGetPlatformFontsForNodeResult struct {
-
 	// Fonts Usage statistics for every employed platform font.
 	Fonts []*CSSPlatformFontUsage `json:"fonts"`
 }
 
 // CSSGetStyleSheetText Returns the current textual content for a stylesheet.
 type CSSGetStyleSheetText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 }
@@ -905,7 +856,6 @@ func (m CSSGetStyleSheetText) Call(c Client) (*CSSGetStyleSheetTextResult, error
 
 // CSSGetStyleSheetTextResult ...
 type CSSGetStyleSheetTextResult struct {
-
 	// Text The stylesheet text.
 	Text string `json:"text"`
 }
@@ -915,7 +865,6 @@ type CSSGetStyleSheetTextResult struct {
 // layer for the nearest ancestor document or shadow root. The layer root contains
 // the full layer tree for the tree scope and their ordering.
 type CSSGetLayersForNode struct {
-
 	// NodeID ...
 	NodeID DOMNodeID `json:"nodeId"`
 }
@@ -931,7 +880,6 @@ func (m CSSGetLayersForNode) Call(c Client) (*CSSGetLayersForNodeResult, error) 
 
 // CSSGetLayersForNodeResult (experimental) ...
 type CSSGetLayersForNodeResult struct {
-
 	// RootLayer ...
 	RootLayer *CSSCSSLayerData `json:"rootLayer"`
 }
@@ -943,7 +891,6 @@ type CSSGetLayersForNodeResult struct {
 // by the DOM agent. If no changes to the tracked properties occur after the node has been pushed
 // to the front-end, no updates will be issued for the node.
 type CSSTrackComputedStyleUpdates struct {
-
 	// PropertiesToTrack ...
 	PropertiesToTrack []*CSSCSSComputedStyleProperty `json:"propertiesToTrack"`
 }
@@ -957,8 +904,7 @@ func (m CSSTrackComputedStyleUpdates) Call(c Client) error {
 }
 
 // CSSTakeComputedStyleUpdates (experimental) Polls the next batch of computed style updates.
-type CSSTakeComputedStyleUpdates struct {
-}
+type CSSTakeComputedStyleUpdates struct{}
 
 // ProtoReq name
 func (m CSSTakeComputedStyleUpdates) ProtoReq() string { return "CSS.takeComputedStyleUpdates" }
@@ -971,7 +917,6 @@ func (m CSSTakeComputedStyleUpdates) Call(c Client) (*CSSTakeComputedStyleUpdate
 
 // CSSTakeComputedStyleUpdatesResult (experimental) ...
 type CSSTakeComputedStyleUpdatesResult struct {
-
 	// NodeIds The list of node Ids that have their tracked computed styles updated.
 	NodeIds []DOMNodeID `json:"nodeIds"`
 }
@@ -979,7 +924,6 @@ type CSSTakeComputedStyleUpdatesResult struct {
 // CSSSetEffectivePropertyValueForNode Find a rule with the given active property for the given node and set the new value for this
 // property
 type CSSSetEffectivePropertyValueForNode struct {
-
 	// NodeID The element id for which to set property.
 	NodeID DOMNodeID `json:"nodeId"`
 
@@ -1002,7 +946,6 @@ func (m CSSSetEffectivePropertyValueForNode) Call(c Client) error {
 
 // CSSSetKeyframeKey Modifies the keyframe rule key text.
 type CSSSetKeyframeKey struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1024,14 +967,12 @@ func (m CSSSetKeyframeKey) Call(c Client) (*CSSSetKeyframeKeyResult, error) {
 
 // CSSSetKeyframeKeyResult ...
 type CSSSetKeyframeKeyResult struct {
-
 	// KeyText The resulting key text after modification.
 	KeyText *CSSValue `json:"keyText"`
 }
 
 // CSSSetMediaText Modifies the rule selector.
 type CSSSetMediaText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1053,14 +994,12 @@ func (m CSSSetMediaText) Call(c Client) (*CSSSetMediaTextResult, error) {
 
 // CSSSetMediaTextResult ...
 type CSSSetMediaTextResult struct {
-
 	// Media The resulting CSS media rule after modification.
 	Media *CSSCSSMedia `json:"media"`
 }
 
 // CSSSetContainerQueryText (experimental) Modifies the expression of a container query.
 type CSSSetContainerQueryText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1082,14 +1021,12 @@ func (m CSSSetContainerQueryText) Call(c Client) (*CSSSetContainerQueryTextResul
 
 // CSSSetContainerQueryTextResult (experimental) ...
 type CSSSetContainerQueryTextResult struct {
-
 	// ContainerQuery The resulting CSS container query rule after modification.
 	ContainerQuery *CSSCSSContainerQuery `json:"containerQuery"`
 }
 
 // CSSSetSupportsText (experimental) Modifies the expression of a supports at-rule.
 type CSSSetSupportsText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1111,14 +1048,12 @@ func (m CSSSetSupportsText) Call(c Client) (*CSSSetSupportsTextResult, error) {
 
 // CSSSetSupportsTextResult (experimental) ...
 type CSSSetSupportsTextResult struct {
-
 	// Supports The resulting CSS Supports rule after modification.
 	Supports *CSSCSSSupports `json:"supports"`
 }
 
 // CSSSetScopeText (experimental) Modifies the expression of a scope at-rule.
 type CSSSetScopeText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1140,14 +1075,12 @@ func (m CSSSetScopeText) Call(c Client) (*CSSSetScopeTextResult, error) {
 
 // CSSSetScopeTextResult (experimental) ...
 type CSSSetScopeTextResult struct {
-
 	// Scope The resulting CSS Scope rule after modification.
 	Scope *CSSCSSScope `json:"scope"`
 }
 
 // CSSSetRuleSelector Modifies the rule selector.
 type CSSSetRuleSelector struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1169,14 +1102,12 @@ func (m CSSSetRuleSelector) Call(c Client) (*CSSSetRuleSelectorResult, error) {
 
 // CSSSetRuleSelectorResult ...
 type CSSSetRuleSelectorResult struct {
-
 	// SelectorList The resulting selector list after modification.
 	SelectorList *CSSSelectorList `json:"selectorList"`
 }
 
 // CSSSetStyleSheetText Sets the new stylesheet text.
 type CSSSetStyleSheetText struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 
@@ -1195,14 +1126,12 @@ func (m CSSSetStyleSheetText) Call(c Client) (*CSSSetStyleSheetTextResult, error
 
 // CSSSetStyleSheetTextResult ...
 type CSSSetStyleSheetTextResult struct {
-
 	// SourceMapURL (optional) URL of source map associated with script (if any).
 	SourceMapURL string `json:"sourceMapURL,omitempty"`
 }
 
 // CSSSetStyleTexts Applies specified style edits one after another in the given order.
 type CSSSetStyleTexts struct {
-
 	// Edits ...
 	Edits []*CSSStyleDeclarationEdit `json:"edits"`
 }
@@ -1218,14 +1147,12 @@ func (m CSSSetStyleTexts) Call(c Client) (*CSSSetStyleTextsResult, error) {
 
 // CSSSetStyleTextsResult ...
 type CSSSetStyleTextsResult struct {
-
 	// Styles The resulting styles after modification.
 	Styles []*CSSCSSStyle `json:"styles"`
 }
 
 // CSSStartRuleUsageTracking Enables the selector recording.
-type CSSStartRuleUsageTracking struct {
-}
+type CSSStartRuleUsageTracking struct{}
 
 // ProtoReq name
 func (m CSSStartRuleUsageTracking) ProtoReq() string { return "CSS.startRuleUsageTracking" }
@@ -1237,8 +1164,7 @@ func (m CSSStartRuleUsageTracking) Call(c Client) error {
 
 // CSSStopRuleUsageTracking Stop tracking rule usage and return the list of rules that were used since last call to
 // `takeCoverageDelta` (or since start of coverage instrumentation).
-type CSSStopRuleUsageTracking struct {
-}
+type CSSStopRuleUsageTracking struct{}
 
 // ProtoReq name
 func (m CSSStopRuleUsageTracking) ProtoReq() string { return "CSS.stopRuleUsageTracking" }
@@ -1251,15 +1177,13 @@ func (m CSSStopRuleUsageTracking) Call(c Client) (*CSSStopRuleUsageTrackingResul
 
 // CSSStopRuleUsageTrackingResult ...
 type CSSStopRuleUsageTrackingResult struct {
-
 	// RuleUsage ...
 	RuleUsage []*CSSRuleUsage `json:"ruleUsage"`
 }
 
 // CSSTakeCoverageDelta Obtain list of rules that became used since last call to this method (or since start of coverage
 // instrumentation).
-type CSSTakeCoverageDelta struct {
-}
+type CSSTakeCoverageDelta struct{}
 
 // ProtoReq name
 func (m CSSTakeCoverageDelta) ProtoReq() string { return "CSS.takeCoverageDelta" }
@@ -1272,7 +1196,6 @@ func (m CSSTakeCoverageDelta) Call(c Client) (*CSSTakeCoverageDeltaResult, error
 
 // CSSTakeCoverageDeltaResult ...
 type CSSTakeCoverageDeltaResult struct {
-
 	// Coverage ...
 	Coverage []*CSSRuleUsage `json:"coverage"`
 
@@ -1282,7 +1205,6 @@ type CSSTakeCoverageDeltaResult struct {
 
 // CSSSetLocalFontsEnabled (experimental) Enables/disables rendering of local CSS fonts (enabled by default).
 type CSSSetLocalFontsEnabled struct {
-
 	// Enabled Whether rendering of local fonts is enabled.
 	Enabled bool `json:"enabled"`
 }
@@ -1298,7 +1220,6 @@ func (m CSSSetLocalFontsEnabled) Call(c Client) error {
 // CSSFontsUpdated Fires whenever a web font is updated.  A non-empty font parameter indicates a successfully loaded
 // web font.
 type CSSFontsUpdated struct {
-
 	// Font (optional) The web font that has loaded.
 	Font *CSSFontFace `json:"font,omitempty"`
 }
@@ -1310,8 +1231,7 @@ func (evt CSSFontsUpdated) ProtoEvent() string {
 
 // CSSMediaQueryResultChanged Fires whenever a MediaQuery result changes (for example, after a browser window has been
 // resized.) The current implementation considers only viewport-dependent media features.
-type CSSMediaQueryResultChanged struct {
-}
+type CSSMediaQueryResultChanged struct{}
 
 // ProtoEvent name
 func (evt CSSMediaQueryResultChanged) ProtoEvent() string {
@@ -1320,7 +1240,6 @@ func (evt CSSMediaQueryResultChanged) ProtoEvent() string {
 
 // CSSStyleSheetAdded Fired whenever an active document stylesheet is added.
 type CSSStyleSheetAdded struct {
-
 	// Header Added stylesheet metainfo.
 	Header *CSSCSSStyleSheetHeader `json:"header"`
 }
@@ -1332,7 +1251,6 @@ func (evt CSSStyleSheetAdded) ProtoEvent() string {
 
 // CSSStyleSheetChanged Fired whenever a stylesheet is changed as a result of the client operation.
 type CSSStyleSheetChanged struct {
-
 	// StyleSheetID ...
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 }
@@ -1344,7 +1262,6 @@ func (evt CSSStyleSheetChanged) ProtoEvent() string {
 
 // CSSStyleSheetRemoved Fired whenever an active document stylesheet is removed.
 type CSSStyleSheetRemoved struct {
-
 	// StyleSheetID Identifier of the removed stylesheet.
 	StyleSheetID CSSStyleSheetID `json:"styleSheetId"`
 }

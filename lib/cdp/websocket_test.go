@@ -12,6 +12,7 @@ import (
 
 	"github.com/Humphryyy/rod/lib/cdp"
 	"github.com/Humphryyy/rod/lib/launcher"
+	"github.com/Humphryyy/rod/lib/utils"
 	"github.com/ysmood/got"
 	"github.com/ysmood/gson"
 )
@@ -82,6 +83,7 @@ func newPage(ctx context.Context, g got.G) (*cdp.Client, string) {
 
 	go func() {
 		for range client.Event() {
+			utils.Noop()
 		}
 	}()
 

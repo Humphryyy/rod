@@ -18,11 +18,13 @@ type Client struct {
 	ret        interface{}
 }
 
-var _ proto.Client = &Client{}
-var _ proto.Sessionable = &Client{}
-var _ proto.Contextable = &Client{}
+var (
+	_ proto.Client      = &Client{}
+	_ proto.Sessionable = &Client{}
+	_ proto.Contextable = &Client{}
+)
 
-func (c *Client) Call(ctx context.Context, sessionID, methodName string, params interface{}) (res []byte, err error) {
+func (c *Client) Call(_ context.Context, sessionID, methodName string, params interface{}) (res []byte, err error) {
 	c.sessionID = sessionID
 	c.methodName = methodName
 	c.params = params
@@ -91,7 +93,6 @@ func (t T) Rect() {
 	pt := res.OnePointInside()
 	t.Eq(348.5, pt.X)
 	t.Eq(399.25, pt.Y)
-
 }
 
 func (t T) Area() {

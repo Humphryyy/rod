@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"image/color"
 	"image/png"
 	"os"
@@ -304,7 +305,7 @@ func TestShadowDOM(t *testing.T) {
 func TestInputTime(t *testing.T) {
 	g := setup(t)
 
-	now := time.Now()
+	now := time.Date(2006, 1, 2, 3, 4, 5, 0, time.Local)
 
 	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
 
@@ -325,6 +326,22 @@ func TestInputTime(t *testing.T) {
 		g.True(p.MustHas("[event=input-datetime-local-change]"))
 	}
 
+	{
+		el = p.MustElement("[type=time]")
+		el.MustInputTime(now)
+
+		g.Eq(el.MustText(), fmt.Sprintf("%02d:%02d", now.Hour(), now.Minute()))
+		g.True(p.MustHas("[event=input-time-change]"))
+	}
+
+	{
+		el = p.MustElement("[type=month]")
+		el.MustInputTime(now)
+
+		g.Eq(el.MustText(), now.Format("2006-01"))
+		g.True(p.MustHas("[event=input-month-change]"))
+	}
+
 	g.Panic(func() {
 		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
 		el.MustInputTime(now)
@@ -340,6 +357,34 @@ func TestInputTime(t *testing.T) {
 	g.Panic(func() {
 		g.mc.stubErr(7, proto.RuntimeCallFunctionOn{})
 		el.MustInputTime(now)
+	})
+}
+
+func TestInputColor(t *testing.T) {
+	g := setup(t)
+
+	p := g.page.MustNavigate(g.srcFile("fixtures/input.html"))
+
+	var el *rod.Element
+	{
+		el = p.MustElement("[type=color]")
+		el.MustInputColor("#ff6f00")
+
+		g.Eq(el.MustText(), "#ff6f00")
+		g.True(p.MustHas("[event=input-color-change]"))
+	}
+
+	g.Panic(func() {
+		g.mc.stubErr(1, proto.RuntimeCallFunctionOn{})
+		el.MustInputColor("#ff6f00")
+	})
+	g.Panic(func() {
+		g.mc.stubErr(5, proto.RuntimeCallFunctionOn{})
+		el.MustInputColor("#ff6f00")
+	})
+	g.Panic(func() {
+		g.mc.stubErr(6, proto.RuntimeCallFunctionOn{})
+		el.MustInputColor("#ff6f00")
 	})
 }
 

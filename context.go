@@ -7,11 +7,13 @@ import (
 	"github.com/Humphryyy/rod/lib/utils"
 )
 
-type timeoutContextKey struct{}
-type timeoutContextVal struct {
-	parent context.Context
-	cancel context.CancelFunc
-}
+type (
+	timeoutContextKey struct{}
+	timeoutContextVal struct {
+		parent context.Context
+		cancel context.CancelFunc
+	}
+)
 
 // Context returns a clone with the specified ctx for chained sub-operations
 func (b *Browser) Context(ctx context.Context) *Browser {
@@ -53,7 +55,9 @@ func (b *Browser) Sleeper(sleeper func() utils.Sleeper) *Browser {
 
 // Context returns a clone with the specified ctx for chained sub-operations
 func (p *Page) Context(ctx context.Context) *Page {
+	p.helpersLock.Lock()
 	newObj := *p
+	p.helpersLock.Unlock()
 	newObj.ctx = ctx
 	return &newObj
 }

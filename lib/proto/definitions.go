@@ -10,7 +10,6 @@ import (
 const Version = "v1.3"
 
 var types = map[string]reflect.Type{
-
 	"Accessibility.AXValueSource":                           reflect.TypeOf(AccessibilityAXValueSource{}),
 	"Accessibility.AXRelatedNode":                           reflect.TypeOf(AccessibilityAXRelatedNode{}),
 	"Accessibility.AXProperty":                              reflect.TypeOf(AccessibilityAXProperty{}),
@@ -70,6 +69,7 @@ var types = map[string]reflect.Type{
 	"Audits.NavigatorUserAgentIssueDetails":                 reflect.TypeOf(AuditsNavigatorUserAgentIssueDetails{}),
 	"Audits.GenericIssueDetails":                            reflect.TypeOf(AuditsGenericIssueDetails{}),
 	"Audits.DeprecationIssueDetails":                        reflect.TypeOf(AuditsDeprecationIssueDetails{}),
+	"Audits.BounceTrackingIssueDetails":                     reflect.TypeOf(AuditsBounceTrackingIssueDetails{}),
 	"Audits.FederatedAuthRequestIssueDetails":               reflect.TypeOf(AuditsFederatedAuthRequestIssueDetails{}),
 	"Audits.ClientHintIssueDetails":                         reflect.TypeOf(AuditsClientHintIssueDetails{}),
 	"Audits.InspectorIssueDetails":                          reflect.TypeOf(AuditsInspectorIssueDetails{}),

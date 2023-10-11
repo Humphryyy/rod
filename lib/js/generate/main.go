@@ -34,7 +34,7 @@ func main() {
 
 	utils.E(utils.OutputFile("lib/js/helper.go", out))
 
-	utils.Exec("gofmt -s -w lib/js/helper.go")
+	utils.Exec("gofumpt -w lib/js/helper.go")
 }
 
 var regDeps = regexp.MustCompile(`\Wfunctions.(\w+)`)
@@ -56,7 +56,7 @@ func fnName(name string) string {
 }
 
 func getList() gson.JSON {
-	code := utils.ExecLine(false, "npx -ys -- uglify-js@3.14.5 -c -m -- lib/js/helper.js")
+	code := utils.ExecLine(false, "npx -ys -- uglify-js@3.17.4 -c -m -- lib/js/helper.js")
 
 	script := fmt.Sprintf(`
 		%s

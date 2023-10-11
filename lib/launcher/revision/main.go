@@ -24,6 +24,11 @@ func main() {
 
 	revLists := [][]int{}
 	for _, os := range list {
+		// skip win32
+		if os == "Win" {
+			continue
+		}
+
 		revList := []int{}
 		for _, s := range getList(mirror + os + "/") {
 			rev, err := strconv.ParseInt(s, 10, 32)
@@ -59,7 +64,6 @@ const RevisionPlaywright = {{.playwright}}
 	)
 
 	utils.E(utils.OutputFile(filepath.FromSlash("lib/launcher/revision.go"), out))
-
 }
 
 func getList(path string) []string {

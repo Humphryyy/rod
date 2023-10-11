@@ -25,6 +25,11 @@ const (
 func MustNewManaged(serviceURL string) *Launcher {
 	l, err := NewManaged(serviceURL)
 	utils.E(err)
+
+	// TODO: remove this after we have a better way to handle this
+	// The latest chromium in docker will crash pages that use http2
+	l.Set("disable-http2")
+
 	return l
 }
 
@@ -69,10 +74,16 @@ func (l *Launcher) JSON() []byte {
 	return utils.MustToJSONBytes(l)
 }
 
-// MustClient for launching browser remotely via the launcher.Manager.
+// MustClient similar to Launcher.Client
 func (l *Launcher) MustClient() *cdp.Client {
 	u, h := l.ClientHeader()
 	return cdp.MustStartWithURL(l.ctx, u, h)
+}
+
+// Client for launching browser remotely via the launcher.Manager.
+func (l *Launcher) Client() (*cdp.Client, error) {
+	u, h := l.ClientHeader()
+	return cdp.StartWithURL(l.ctx, u, h)
 }
 
 // ClientHeader for launching browser remotely via the launcher.Manager.

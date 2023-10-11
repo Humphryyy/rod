@@ -86,7 +86,6 @@ func TestOutputString(t *testing.T) {
 	_ = utils.OutputFile(p, p)
 
 	s, err := utils.ReadString(p)
-
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +101,6 @@ func TestOutputBytes(t *testing.T) {
 	_ = utils.OutputFile(p, []byte("test"))
 
 	s, err := utils.ReadString(p)
-
 	if err != nil {
 		panic(err)
 	}
@@ -119,7 +117,6 @@ func TestOutputStream(t *testing.T) {
 	_ = utils.OutputFile(p, b)
 
 	s, err := utils.ReadString(p)
-
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +134,7 @@ func TestOutputJSONErr(t *testing.T) {
 	})
 }
 
-func TestSleep(t *testing.T) {
+func TestSleep(_ *testing.T) {
 	utils.Sleep(0.01)
 }
 
@@ -148,7 +145,7 @@ func TestAll(t *testing.T) {
 	utils.All(c, c, c)()
 }
 
-func TestPause(t *testing.T) {
+func TestPause(_ *testing.T) {
 	go utils.Pause()
 }
 
