@@ -6,6 +6,8 @@ github.com/saucesteals/fhttp v0.0.0-20220605173003-49317810090d h1:IOjiUdzmseC6e
 github.com/saucesteals/fhttp v0.0.0-20220605173003-49317810090d/go.mod h1:tEKifE6IjbxcvVSmEOiHH0e/3dvSv6sN4nailAD7tPE=
 github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a h1:jiEP6CVElK5wDp/e+eoiNopskFQKIQbI9ZvqzGh40cA=
 github.com/saucesteals/utls v1.1.2-0.20220526033452-2e6d7376b70a/go.mod h1:I0obaa60NZ0gTwX8rpbeH6fb18E90q8YlhLdOF0ot0k=
+github.com/ysmood/fetchup v0.2.3 h1:ulX+SonA0Vma5zUFXtv52Kzip/xe7aj4vqT5AJwQ+ZQ=
+github.com/ysmood/fetchup v0.2.3/go.mod h1:xhibcRKziSvol0H1/pj33dnKrYyI2ebIvz5cOOkYGns=
 github.com/ysmood/goob v0.4.0 h1:HsxXhyLBeGzWXnqVKtmT9qM7EuVs/XOgkX7T6r1o1AQ=
 github.com/ysmood/goob v0.4.0/go.mod h1:u6yx7ZhS4Exf2MwciFr6nIM8knHQIE22lFpWHnfql18=
 github.com/ysmood/gop v0.0.2 h1:VuWweTmXK+zedLqYufJdh3PlxDNBOfFHjIZlPT2T5nw=

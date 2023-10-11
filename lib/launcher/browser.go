@@ -6,19 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/url"
+
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	tls "github.com/saucesteals/utls"
-
 	http "github.com/saucesteals/fhttp"
 
 	"github.com/Humphryyy/rod/lib/defaults"
 	"github.com/Humphryyy/rod/lib/utils"
+	"github.com/ysmood/fetchup"
 	"github.com/ysmood/leakless"
 )
 
@@ -140,9 +139,6 @@ func (lc *Browser) Download() error {
 	fu := fetchup.New(dir, us...)
 	fu.Ctx = lc.Context
 	fu.Logger = lc.Logger
-	if lc.HTTPClient != nil {
-		fu.HttpClient = lc.HTTPClient
-	}
 
 	err := fu.Fetch()
 	if err != nil {
