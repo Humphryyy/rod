@@ -32,7 +32,7 @@ var (
 // Browser represents the browser.
 // It doesn't depends on file system, it should work with remote browser seamlessly.
 // To check the env var you can use to quickly enable options from CLI, check here:
-// https://pkg.go.dev/github.com/go-rod/rod/lib/defaults
+// https://pkg.go.dev/github.com/Humphryyy/rod/lib/defaults
 type Browser struct {
 	// BrowserContextID is the id for incognito window
 	BrowserContextID proto.BrowserBrowserContextID

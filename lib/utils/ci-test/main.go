@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	"github.com/go-rod/rod/lib/utils"
+	"github.com/Humphryyy/rod/lib/utils"
 )
 
 func main() {

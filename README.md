@@ -44,7 +44,7 @@ Your help is more than welcome! Even just open an issue to ask a question may gr
 
 Please read [How To Ask Questions The Smart Way](http://www.catb.org/~esr/faqs/smart-questions.html) before you ask questions.
 
-We use Github Projects to manage tasks, you can see the priority and progress of the issues [here](https://github.com/go-rod/rod/projects).
+We use Github Projects to manage tasks, you can see the priority and progress of the issues [here](https://github.com/Humphryyy/rod/projects).
 
 If you want to contribute please read the [Contributor Guide](.github/CONTRIBUTING.md).
 
