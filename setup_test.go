@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 
 	"github.com/Humphryyy/rod"
 	"github.com/Humphryyy/rod/lib/cdp"

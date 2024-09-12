@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 
 	"github.com/Humphryyy/rod"
 	"github.com/Humphryyy/rod/lib/launcher"

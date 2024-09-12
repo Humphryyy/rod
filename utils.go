@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 
 	"github.com/Humphryyy/rod/lib/cdp"
 	"github.com/Humphryyy/rod/lib/proto"

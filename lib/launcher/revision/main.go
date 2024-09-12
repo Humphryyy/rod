@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 	"github.com/ysmood/gson"
 
 	"github.com/Humphryyy/rod/lib/utils"

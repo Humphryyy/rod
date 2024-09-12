@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/saucesteals/fhttp/httputil"
+	"github.com/AlpineAIO/fhttp/httputil"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 
 	"github.com/Humphryyy/rod/lib/cdp"
 	"github.com/Humphryyy/rod/lib/launcher/flags"

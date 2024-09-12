@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	http "github.com/saucesteals/fhttp"
+	http "github.com/AlpineAIO/fhttp"
 
 	"github.com/Humphryyy/rod/lib/assets"
 	"github.com/Humphryyy/rod/lib/js"
